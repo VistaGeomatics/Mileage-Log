@@ -232,14 +232,12 @@
       background: #f9fbff;
     }
 
-    .log-table th:nth-child(1) { width: 10%; }  /* Date */
-    .log-table th:nth-child(2) { width: 12%; }  /* Vehicle */
-    .log-table th:nth-child(3) { width: 12%; }  /* Start Odo */
-    .log-table th:nth-child(4) { width: 12%; }  /* End Odo */
-    .log-table th:nth-child(5) { width: 11%; }  /* Business km */
-    .log-table th:nth-child(6) { width: 11%; }  /* Personal km */
-    .log-table th:nth-child(7) { width: 14%; }  /* Client/Project */
-    .log-table th:nth-child(8) { width: 18%; }  /* Purpose */
+    .log-table th:nth-child(1) { width: 12%; }  /* Date */
+    .log-table th:nth-child(2) { width: 20%; }  /* Vehicle */
+    .log-table th:nth-child(3) { width: 16%; }  /* Start Odo */
+    .log-table th:nth-child(4) { width: 16%; }  /* End Odo */
+    .log-table th:nth-child(5) { width: 18%; }  /* Business km */
+    .log-table th:nth-child(6) { width: 18%; }  /* Personal km */
 
     .small-input {
       width: 100%;
@@ -317,6 +315,27 @@
       accent-color: var(--vista-blue);
     }
 
+    .photo-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .odometer-photo-preview {
+      margin-top: 6px;
+    }
+
+    .odometer-photo-preview img {
+      max-width: 160px;
+      max-height: 90px;
+      border-radius: 8px;
+      border: 1px solid var(--border-soft);
+      object-fit: cover;
+      background: #e5ecf7;
+      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.1);
+    }
+
     @media (max-width: 700px) {
       .header-bar {
         flex-direction: column;
@@ -339,7 +358,6 @@
         <h1>VISTAGEOMATICS</h1>
         <p>Mileage Log</p>
       </div>
-      <!-- Update this path to your logo -->
       <img src="vista-geomatics.png" alt="VistaGeomatics Logo" class="header-logo">
     </div>
 
@@ -408,8 +426,8 @@
         </div>
 
         <div class="helper-text">
-          Use one row per trip. If you use multiple vehicles, enter the vehicle / plate in the “Vehicle” column
-          for each line. Keep supporting records (e.g., odometer photos, maintenance records) with this log.
+          Use one row per trip. If you use multiple vehicles, enter the alternate unit/plate in the “Vehicle” column
+          for that line. Keep supporting records (e.g., odometer photos, maintenance records) with this log.
         </div>
       </div>
 
@@ -417,7 +435,7 @@
       <div class="section-card">
         <div class="section-header">
           <div class="section-title">Daily Mileage Entries</div>
-          <div class="section-note">Use one row for each trip. Click “Add Row” as needed.</div>
+          <div class="section-note">Vehicle and odometer fields will auto-fill where possible.</div>
         </div>
         <table class="log-table" id="logTable">
           <thead>
@@ -428,8 +446,6 @@
             <th>End Odometer</th>
             <th>Business km</th>
             <th>Personal km</th>
-            <th>Client / Project</th>
-            <th>From / To / Purpose</th>
           </tr>
           </thead>
           <tbody id="logBody">
@@ -441,7 +457,7 @@
         </div>
       </div>
 
-      <!-- Odometer verification -->
+      <!-- Odometer verification & photo -->
       <div class="section-card">
         <div class="section-header">
           <div class="section-title">Odometer Verification</div>
@@ -456,6 +472,14 @@
             <textarea id="od_variance" name="od_variance" placeholder="Explain any differences between the log and odometer (e.g., while vehicle was in maintenance)."></textarea>
           </div>
         </div>
+
+        <div class="photo-actions">
+          <button type="button" class="btn-secondary" id="odoPhotoBtn">+ Add Odometer Photo</button>
+          <input type="file" id="odoPhotoInput" accept="image/*" style="display:none;">
+          <span class="section-note">Small odometer photo to support readings.</span>
+        </div>
+        <div class="odometer-photo-preview" id="odoPhotoPreview"></div>
+
         <div class="checkbox-row">
           <label>
             <input type="checkbox" id="od_confirm_match" name="od_confirm_match">
@@ -504,11 +528,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
-  const STORAGE_KEY = 'vistaMileageLog_v1';
+  const STORAGE_KEY = 'vistaMileageLog_v2';
 
   const logBody   = document.getElementById('logBody');
   const addRowBtn = document.getElementById('addRowBtn');
   const form      = document.getElementById('mileageForm');
+
+  let odometerPhotoData = '';
+
+  function buildVehicleLabel() {
+    const make  = document.getElementById('make')?.value || '';
+    const model = document.getElementById('model')?.value || '';
+    const plate = document.getElementById('plate')?.value || '';
+    const parts = [];
+    if (make) parts.push(make);
+    if (model) parts.push(model);
+    if (plate) parts.push('(' + plate + ')');
+    return parts.join(' ');
+  }
 
   function createLogRow(values) {
     const tr = document.createElement('tr');
@@ -519,34 +556,200 @@
       <td><input type="text" class="small-input" name="end_odo[]"></td>
       <td><input type="text" class="small-input" name="business_km[]"></td>
       <td><input type="text" class="small-input" name="personal_km[]"></td>
-      <td><input type="text" class="small-input" name="client[]"></td>
-      <td><input type="text" class="small-input" name="purpose[]"></td>
     `;
+
+    const inputs = tr.querySelectorAll('input.small-input');
+    const vehicleInput = tr.querySelector('input[name="vehicle[]"]');
+
     if (values && Array.isArray(values)) {
-      const inputs = tr.querySelectorAll('input.small-input');
       inputs.forEach((input, idx) => {
         if (values[idx] !== undefined) {
           input.value = values[idx];
         }
       });
+    } else {
+      // Auto-fill vehicle from header (but user can edit)
+      const label = buildVehicleLabel();
+      if (vehicleInput && label) {
+        vehicleInput.value = label;
+      }
     }
+
+    attachRowEvents(tr);
     return tr;
   }
 
   function ensureInitialRows() {
     if (logBody.children.length === 0) {
       for (let i = 0; i < 8; i++) {
-        logBody.appendChild(createLogRow());
+        const row = createLogRow();
+        // auto-fill start based on prior row
+        autoFillStartOdometer(row);
+        logBody.appendChild(row);
       }
+    }
+  }
+
+  function numOrNaN(val) {
+    if (!val) return NaN;
+    const n = parseFloat(String(val).replace(',', '.'));
+    return isNaN(n) ? NaN : n;
+  }
+
+  function updateRowCalcs(row) {
+    const startInput = row.querySelector('input[name="start_odo[]"]');
+    const endInput   = row.querySelector('input[name="end_odo[]"]');
+    const busInput   = row.querySelector('input[name="business_km[]"]');
+    const perInput   = row.querySelector('input[name="personal_km[]"]');
+
+    if (!startInput || !endInput || !busInput || !perInput) return;
+
+    const startVal = numOrNaN(startInput.value);
+    const busVal   = numOrNaN(busInput.value);
+    const perVal   = numOrNaN(perInput.value);
+
+    if (!isNaN(startVal) && (!isNaN(busVal) || !isNaN(perVal))) {
+      const totalKm = (isNaN(busVal) ? 0 : busVal) + (isNaN(perVal) ? 0 : perVal);
+      const endVal  = startVal + totalKm;
+      if (!isNaN(endVal)) {
+        endInput.value = String(endVal);
+      }
+    }
+
+    updateTotals();
+  }
+
+  function updateTotals() {
+    let totalBus = 0;
+    let totalPer = 0;
+
+    const rows = logBody.querySelectorAll('tr');
+    rows.forEach(row => {
+      const busInput = row.querySelector('input[name="business_km[]"]');
+      const perInput = row.querySelector('input[name="personal_km[]"]');
+      const busVal   = numOrNaN(busInput?.value);
+      const perVal   = numOrNaN(perInput?.value);
+      if (!isNaN(busVal)) totalBus += busVal;
+      if (!isNaN(perVal)) totalPer += perVal;
+    });
+
+    const totalBusInput = document.getElementById('total_business');
+    const totalPerInput = document.getElementById('total_personal');
+    if (totalBusInput) totalBusInput.value = totalBus ? String(totalBus) : '';
+    if (totalPerInput) totalPerInput.value = totalPer ? String(totalPer) : '';
+  }
+
+  function autoFillStartOdometer(row) {
+    const prev = row.previousElementSibling;
+    if (!prev) return;
+    const prevEnd = prev.querySelector('input[name="end_odo[]"]');
+    const start   = row.querySelector('input[name="start_odo[]"]');
+    if (prevEnd && start && !start.value) {
+      start.value = prevEnd.value || '';
+    }
+  }
+
+  function attachRowEvents(row) {
+    const startInput = row.querySelector('input[name="start_odo[]"]');
+    const endInput   = row.querySelector('input[name="end_odo[]"]');
+    const busInput   = row.querySelector('input[name="business_km[]"]');
+    const perInput   = row.querySelector('input[name="personal_km[]"]');
+
+    if (startInput) {
+      startInput.addEventListener('input', () => {
+        updateRowCalcs(row);
+        saveDraft();
+      });
+    }
+
+    if (busInput) {
+      busInput.addEventListener('input', () => {
+        updateRowCalcs(row);
+        saveDraft();
+      });
+    }
+
+    if (perInput) {
+      perInput.addEventListener('input', () => {
+        updateRowCalcs(row);
+        saveDraft();
+      });
+    }
+
+    if (endInput) {
+      endInput.addEventListener('change', () => {
+        // push end odometer into next row start if blank
+        const next = row.nextElementSibling;
+        if (next) {
+          const nextStart = next.querySelector('input[name="start_odo[]"]');
+          if (nextStart && !nextStart.value) {
+            nextStart.value = endInput.value;
+          }
+        }
+        updateTotals();
+        saveDraft();
+      });
     }
   }
 
   ensureInitialRows();
 
+  // Sync vehicle column defaults when header vehicle info changes
+  ['make', 'model', 'plate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', () => {
+        const label = buildVehicleLabel();
+        const rows = logBody.querySelectorAll('tr');
+        rows.forEach(row => {
+          const vehicleInput = row.querySelector('input[name="vehicle[]"]');
+          if (vehicleInput && !vehicleInput.value) {
+            vehicleInput.value = label;
+          }
+        });
+        saveDraft();
+      });
+    }
+  });
+
   if (addRowBtn) {
     addRowBtn.addEventListener('click', () => {
-      logBody.appendChild(createLogRow());
+      const row = createLogRow();
+      autoFillStartOdometer(row);
+      logBody.appendChild(row);
       saveDraft();
+    });
+  }
+
+  // ---------- ODOMETER PHOTO ----------
+  const odoPhotoBtn    = document.getElementById('odoPhotoBtn');
+  const odoPhotoInput  = document.getElementById('odoPhotoInput');
+  const odoPhotoPreview = document.getElementById('odoPhotoPreview');
+
+  function renderOdoPreview(dataUrl) {
+    if (!odoPhotoPreview) return;
+    odoPhotoPreview.innerHTML = '';
+    if (dataUrl) {
+      const img = document.createElement('img');
+      img.src = dataUrl;
+      img.alt = 'Odometer Photo';
+      odoPhotoPreview.appendChild(img);
+    }
+  }
+
+  if (odoPhotoBtn && odoPhotoInput) {
+    odoPhotoBtn.addEventListener('click', () => odoPhotoInput.click());
+    odoPhotoInput.addEventListener('change', () => {
+      const file = odoPhotoInput.files && odoPhotoInput.files[0];
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        odometerPhotoData = e.target.result;
+        renderOdoPreview(odometerPhotoData);
+        saveDraft();
+      };
+      reader.readAsDataURL(file);
+      odoPhotoInput.value = '';
     });
   }
 
@@ -567,11 +770,11 @@
         if (el) data.single[id] = el.value || '';
       });
 
-      // checkboxes
+      data.single.odometer_photo = odometerPhotoData || '';
+
       data.checks.od_confirm_match = document.getElementById('od_confirm_match')?.checked || false;
       data.checks.od_confirm_maintenance = document.getElementById('od_confirm_maintenance')?.checked || false;
 
-      // table rows
       const rows = Array.from(logBody.querySelectorAll('tr'));
       rows.forEach(row => {
         const inputs = row.querySelectorAll('input.small-input');
@@ -589,6 +792,7 @@
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       ensureInitialRows();
+      updateTotals();
       return;
     }
     try {
@@ -596,9 +800,15 @@
 
       if (data.single) {
         Object.keys(data.single).forEach(id => {
+          if (id === 'odometer_photo') return;
           const el = document.getElementById(id);
           if (el) el.value = data.single[id];
         });
+      }
+
+      if (data.single && data.single.odometer_photo) {
+        odometerPhotoData = data.single.odometer_photo;
+        renderOdoPreview(odometerPhotoData);
       }
 
       if (data.checks) {
@@ -611,34 +821,39 @@
       if (Array.isArray(data.rows) && data.rows.length > 0) {
         logBody.innerHTML = '';
         data.rows.forEach(rowVals => {
-          logBody.appendChild(createLogRow(rowVals));
+          const row = createLogRow(rowVals);
+          logBody.appendChild(row);
         });
       } else {
         ensureInitialRows();
       }
+
+      updateTotals();
     } catch (e) {
       console.warn('Unable to load draft', e);
+      logBody.innerHTML = '';
       ensureInitialRows();
+      updateTotals();
     }
   }
 
   loadDraft();
 
-  // Save on any change
   if (form) {
     form.addEventListener('input', saveDraft);
     form.addEventListener('change', saveDraft);
   }
 
-  // Reset clears storage and rebuilds fresh rows
   const resetBtn = document.getElementById('resetBtn');
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
       localStorage.removeItem(STORAGE_KEY);
-      // Let the browser clear fields, then rebuild rows
+      odometerPhotoData = '';
+      renderOdoPreview('');
       setTimeout(() => {
         logBody.innerHTML = '';
         ensureInitialRows();
+        updateTotals();
       }, 0);
     });
   }
