@@ -426,7 +426,7 @@
         </div>
 
         <div class="helper-text">
-          Use one row per trip. If you use multiple vehicles, enter the alternate unit/plate in the “Vehicle” column
+          Use one row per trip. If you use multiple vehicles, enter the alternate plate in the “Vehicle” column
           for that line. Keep supporting records (e.g., odometer photos, maintenance records) with this log.
         </div>
       </div>
@@ -536,15 +536,10 @@
 
   let odometerPhotoData = '';
 
+  // DEFAULT VEHICLE LABEL = PLATE ONLY
   function buildVehicleLabel() {
-    const make  = document.getElementById('make')?.value || '';
-    const model = document.getElementById('model')?.value || '';
     const plate = document.getElementById('plate')?.value || '';
-    const parts = [];
-    if (make) parts.push(make);
-    if (model) parts.push(model);
-    if (plate) parts.push('(' + plate + ')');
-    return parts.join(' ');
+    return plate;
   }
 
   function createLogRow(values) {
@@ -568,7 +563,6 @@
         }
       });
     } else {
-      // Auto-fill vehicle from header (but user can edit)
       const label = buildVehicleLabel();
       if (vehicleInput && label) {
         vehicleInput.value = label;
@@ -583,7 +577,6 @@
     if (logBody.children.length === 0) {
       for (let i = 0; i < 8; i++) {
         const row = createLogRow();
-        // auto-fill start based on prior row
         autoFillStartOdometer(row);
         logBody.appendChild(row);
       }
@@ -644,7 +637,7 @@
     if (!prev) return;
     const prevEnd = prev.querySelector('input[name="end_odo[]"]');
     const start   = row.querySelector('input[name="start_odo[]"]');
-    if (prevEnd && start && !start.value) {
+    if (prevEnd && start) {
       start.value = prevEnd.value || '';
     }
   }
@@ -678,11 +671,11 @@
 
     if (endInput) {
       endInput.addEventListener('change', () => {
-        // push end odometer into next row start if blank
+        // Every start odometer after the first = previous row's end odometer
         const next = row.nextElementSibling;
         if (next) {
           const nextStart = next.querySelector('input[name="start_odo[]"]');
-          if (nextStart && !nextStart.value) {
+          if (nextStart) {
             nextStart.value = endInput.value;
           }
         }
@@ -694,23 +687,21 @@
 
   ensureInitialRows();
 
-  // Sync vehicle column defaults when header vehicle info changes
-  ['make', 'model', 'plate'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('input', () => {
-        const label = buildVehicleLabel();
-        const rows = logBody.querySelectorAll('tr');
-        rows.forEach(row => {
-          const vehicleInput = row.querySelector('input[name="vehicle[]"]');
-          if (vehicleInput && !vehicleInput.value) {
-            vehicleInput.value = label;
-          }
-        });
-        saveDraft();
+  // Sync vehicle column defaults when plate changes (plate only)
+  const plateEl = document.getElementById('plate');
+  if (plateEl) {
+    plateEl.addEventListener('input', () => {
+      const label = buildVehicleLabel();
+      const rows = logBody.querySelectorAll('tr');
+      rows.forEach(row => {
+        const vehicleInput = row.querySelector('input[name="vehicle[]"]');
+        if (vehicleInput && !vehicleInput.value) {
+          vehicleInput.value = label;
+        }
       });
-    }
-  });
+      saveDraft();
+    });
+  }
 
   if (addRowBtn) {
     addRowBtn.addEventListener('click', () => {
