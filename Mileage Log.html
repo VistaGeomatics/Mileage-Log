@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>VistaGeomatics – Mileage Log</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --vista-blue: #165f7d;
+      --vista-blue-light: #2a7fa3;
+      --vista-blue-dark: #0b3045;
+      --bg-body: #eef3f9;
+      --bg-card: #ffffff;
+      --border-soft: #d6e2f0;
+      --text-main: #101827;
+      --text-muted: #6b7280;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: "Inter", sans-serif;
+      background: radial-gradient(circle at top, #f4f8fc 0, #e4edf6 40%, #dde6f3 100%);
+      color: var(--text-main);
+    }
+
+    .page-wrap {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .container {
+      background: var(--bg-card);
+      border-radius: 16px;
+      box-shadow: 0 14px 30px rgba(5, 41, 66, 0.18), 0 0 0 1px rgba(5, 41, 66, 0.04);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .container::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at top right, rgba(22,95,125,0.16), transparent 55%);
+      opacity: 0.9;
+    }
+
+    /* HEADER BAR */
+    .header-bar {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: linear-gradient(120deg, var(--vista-blue-light) 0%, var(--vista-blue) 40%, var(--vista-blue-dark) 100%);
+      color: #fff;
+    }
+
+    .header-left h1 {
+      margin: 0;
+      font-family: "Montserrat", sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .header-left p {
+      margin: 2px 0 0;
+      font-size: 0.8rem;
+      opacity: 0.9;
+    }
+
+    .header-logo {
+      height: 60px;
+      filter: drop-shadow(0 5px 14px rgba(0,0,0,0.35));
+    }
+
+    /* PAGE TITLE */
+    .page-title-bar {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 12px 20px 8px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.78), #f7faff);
+    }
+
+    .page-title-main {
+      font-family: "Montserrat", sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--vista-blue-dark);
+    }
+
+    .page-title-sub {
+      margin-top: 3px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .page-title-accent {
+      width: 120px;
+      height: 3px;
+      margin: 8px auto 0;
+      border-radius: 999px;
+      background: linear-gradient(120deg, var(--vista-blue-light), var(--vista-blue), var(--vista-blue-dark));
+      box-shadow: 0 0 8px rgba(46,167,224,0.65);
+    }
+
+    form {
+      position: relative;
+      z-index: 1;
+      padding: 10px 18px 16px;
+      font-size: 0.86rem;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 3px;
+      color: var(--text-main);
+    }
+
+    input[type="text"],
+    input[type="date"],
+    textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border-soft);
+      background: #f9fbff;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      transition: 0.15s;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--vista-blue-light);
+      background: #fff;
+      box-shadow: 0 0 0 2px rgba(38,132,168,0.18);
+    }
+
+    textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 8px;
+    }
+
+    .section-card {
+      margin-top: 10px;
+      padding: 8px 10px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--border-soft);
+      background: linear-gradient(135deg, #fbfdff 0%, #f4f8fd 60%, #eff5fb 100%);
+      box-shadow: 0 8px 20px rgba(5, 41, 66, 0.05);
+      position: relative;
+    }
+
+    .section-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 12px 12px 0 0;
+      background: linear-gradient(90deg, var(--vista-blue-light), var(--vista-blue-dark));
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .section-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--vista-blue-dark);
+      font-family: "Montserrat", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .section-note {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    .top-info-header {
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+      color: var(--vista-blue-dark);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 4px;
+      font-size: 0.78rem;
+    }
+
+    th, td {
+      padding: 4px 4px;
+      border: 1px solid var(--border-soft);
+    }
+
+    th {
+      background: #e8f0fb;
+      font-weight: 600;
+      color: var(--vista-blue-dark);
+      text-align: left;
+    }
+
+    td {
+      background: #f9fbff;
+    }
+
+    .log-table th:nth-child(1) { width: 10%; }  /* Date */
+    .log-table th:nth-child(2) { width: 12%; }  /* Vehicle */
+    .log-table th:nth-child(3) { width: 12%; }  /* Start Odo */
+    .log-table th:nth-child(4) { width: 12%; }  /* End Odo */
+    .log-table th:nth-child(5) { width: 11%; }  /* Business km */
+    .log-table th:nth-child(6) { width: 11%; }  /* Personal km */
+    .log-table th:nth-child(7) { width: 14%; }  /* Client/Project */
+    .log-table th:nth-child(8) { width: 18%; }  /* Purpose */
+
+    .small-input {
+      width: 100%;
+      padding: 4px 6px;
+      border-radius: 7px;
+      border: 1px solid var(--border-soft);
+      background: #ffffff;
+      font-size: 0.76rem;
+      color: var(--text-main);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(120deg, var(--vista-blue-light), var(--vista-blue), var(--vista-blue-dark));
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(5, 41, 66, 0.35);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: var(--text-main);
+      border: 1px solid #d4d7dd;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+    }
+
+    .helper-text {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .checkbox-row {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.78rem;
+    }
+
+    .checkbox-row label {
+      display: inline-flex;
+      gap: 6px;
+      align-items: flex-start;
+      font-weight: 500;
+      margin-bottom: 0;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      margin-top: 2px;
+      accent-color: var(--vista-blue);
+    }
+
+    @media (max-width: 700px) {
+      .header-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .page-title-main {
+        font-size: 1.1rem;
+        letter-spacing: 0.12em;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrap">
+  <div class="container" id="logContainer">
+    <div class="header-bar">
+      <div class="header-left">
+        <h1>VISTAGEOMATICS</h1>
+        <p>Mileage Log</p>
+      </div>
+      <!-- Update this path to your logo -->
+      <img src="vista-geomatics.png" alt="VistaGeomatics Logo" class="header-logo">
+    </div>
+
+    <div class="page-title-bar">
+      <div class="page-title-main">Mileage Log</div>
+      <div class="page-title-sub">Track business and personal mileage for each vehicle used.</div>
+      <div class="page-title-accent"></div>
+    </div>
+
+    <form id="mileageForm">
+      <!-- Driver + Vehicle info -->
+      <div class="section-card">
+        <div class="top-info-header">Driver &amp; Vehicle Information</div>
+        <div class="grid-2">
+          <div>
+            <label for="driver_name">Driver Name</label>
+            <input type="text" id="driver_name" name="driver_name">
+          </div>
+          <div>
+            <label for="home_address">Home Address</label>
+            <input type="text" id="home_address" name="home_address">
+          </div>
+          <div>
+            <label for="city">City</label>
+            <input type="text" id="city" name="city">
+          </div>
+          <div>
+            <label for="province">Province</label>
+            <input type="text" id="province" name="province">
+          </div>
+          <div>
+            <label for="postal_code">Postal Code</label>
+            <input type="text" id="postal_code" name="postal_code">
+          </div>
+          <div>
+            <label for="bus_phone">Business Telephone</label>
+            <input type="text" id="bus_phone" name="bus_phone">
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top:8px;">
+          <div>
+            <label for="year">Primary Vehicle Year</label>
+            <input type="text" id="year" name="year" placeholder="e.g., 2022">
+          </div>
+          <div>
+            <label for="make">Primary Vehicle Make</label>
+            <input type="text" id="make" name="make">
+          </div>
+          <div>
+            <label for="model">Primary Vehicle Model</label>
+            <input type="text" id="model" name="model">
+          </div>
+          <div>
+            <label for="plate">Primary Licence Plate</label>
+            <input type="text" id="plate" name="plate">
+          </div>
+          <div>
+            <label for="vin">Primary VIN</label>
+            <input type="text" id="vin" name="vin">
+          </div>
+          <div>
+            <label for="log_period">Log Period (Month / Year)</label>
+            <input type="text" id="log_period" name="log_period" placeholder="e.g., March 2025">
+          </div>
+        </div>
+
+        <div class="helper-text">
+          Use one row per trip. If you use multiple vehicles, enter the vehicle / plate in the “Vehicle” column
+          for each line. Keep supporting records (e.g., odometer photos, maintenance records) with this log.
+        </div>
+      </div>
+
+      <!-- Mileage entries -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">Daily Mileage Entries</div>
+          <div class="section-note">Use one row for each trip. Click “Add Row” as needed.</div>
+        </div>
+        <table class="log-table" id="logTable">
+          <thead>
+          <tr>
+            <th>Date</th>
+            <th>Vehicle (Unit / Plate)</th>
+            <th>Start Odometer</th>
+            <th>End Odometer</th>
+            <th>Business km</th>
+            <th>Personal km</th>
+            <th>Client / Project</th>
+            <th>From / To / Purpose</th>
+          </tr>
+          </thead>
+          <tbody id="logBody">
+          <!-- Rows added by JS -->
+          </tbody>
+        </table>
+        <div class="btn-row" style="justify-content:flex-start; margin-top:8px;">
+          <button type="button" class="btn-secondary" id="addRowBtn">+ Add Row</button>
+        </div>
+      </div>
+
+      <!-- Odometer verification -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">Odometer Verification</div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label for="od_proof_ref">Odometer proof (photo name / reference)</label>
+            <input type="text" id="od_proof_ref" name="od_proof_ref" placeholder="e.g., IMG_2033.jpg / service record #">
+          </div>
+          <div>
+            <label for="od_variance">Notes (maintenance, odometer changes, variances)</label>
+            <textarea id="od_variance" name="od_variance" placeholder="Explain any differences between the log and odometer (e.g., while vehicle was in maintenance)."></textarea>
+          </div>
+        </div>
+        <div class="checkbox-row">
+          <label>
+            <input type="checkbox" id="od_confirm_match" name="od_confirm_match">
+            <span>I confirm the odometer readings in this log match the actual odometer readings when the vehicle was used, or are supported by attached records.</span>
+          </label>
+          <label>
+            <input type="checkbox" id="od_confirm_maintenance" name="od_confirm_maintenance">
+            <span>If the vehicle was in maintenance, I have accounted for any odometer changes and kept supporting documentation.</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Totals & Notes -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">Summary</div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label for="total_business">Total Business km</label>
+            <input type="text" id="total_business" name="total_business">
+          </div>
+          <div>
+            <label for="total_personal">Total Personal km</label>
+            <input type="text" id="total_personal" name="total_personal">
+          </div>
+        </div>
+        <div style="margin-top:8px;">
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" placeholder="Additional details (e.g., allocations by vehicle, corrections, comments)."></textarea>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="btn-row" id="buttonRow">
+        <button type="reset" class="btn-secondary" id="resetBtn">Reset / Clear Month</button>
+        <button type="button" class="btn-primary" id="downloadBtn">Download PDF</button>
+        <button type="button" class="btn-primary" id="shareBtn">Share PDF</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- jsPDF + html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+  const STORAGE_KEY = 'vistaMileageLog_v1';
+
+  const logBody   = document.getElementById('logBody');
+  const addRowBtn = document.getElementById('addRowBtn');
+  const form      = document.getElementById('mileageForm');
+
+  function createLogRow(values) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="date" class="small-input" name="date[]"></td>
+      <td><input type="text" class="small-input" name="vehicle[]"></td>
+      <td><input type="text" class="small-input" name="start_odo[]"></td>
+      <td><input type="text" class="small-input" name="end_odo[]"></td>
+      <td><input type="text" class="small-input" name="business_km[]"></td>
+      <td><input type="text" class="small-input" name="personal_km[]"></td>
+      <td><input type="text" class="small-input" name="client[]"></td>
+      <td><input type="text" class="small-input" name="purpose[]"></td>
+    `;
+    if (values && Array.isArray(values)) {
+      const inputs = tr.querySelectorAll('input.small-input');
+      inputs.forEach((input, idx) => {
+        if (values[idx] !== undefined) {
+          input.value = values[idx];
+        }
+      });
+    }
+    return tr;
+  }
+
+  function ensureInitialRows() {
+    if (logBody.children.length === 0) {
+      for (let i = 0; i < 8; i++) {
+        logBody.appendChild(createLogRow());
+      }
+    }
+  }
+
+  ensureInitialRows();
+
+  if (addRowBtn) {
+    addRowBtn.addEventListener('click', () => {
+      logBody.appendChild(createLogRow());
+      saveDraft();
+    });
+  }
+
+  // ---------- LOCAL STORAGE (AUTO-SAVE / AUTO-LOAD) ----------
+  function saveDraft() {
+    try {
+      const data = { single: {}, rows: [], checks: {} };
+
+      const singleIds = [
+        'driver_name','home_address','city','province','postal_code','bus_phone',
+        'year','make','model','plate','vin','log_period',
+        'od_proof_ref','od_variance',
+        'total_business','total_personal','notes'
+      ];
+
+      singleIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) data.single[id] = el.value || '';
+      });
+
+      // checkboxes
+      data.checks.od_confirm_match = document.getElementById('od_confirm_match')?.checked || false;
+      data.checks.od_confirm_maintenance = document.getElementById('od_confirm_maintenance')?.checked || false;
+
+      // table rows
+      const rows = Array.from(logBody.querySelectorAll('tr'));
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll('input.small-input');
+        const rowVals = Array.from(inputs).map(i => i.value || '');
+        data.rows.push(rowVals);
+      });
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+      console.warn('Unable to save draft', e);
+    }
+  }
+
+  function loadDraft() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      ensureInitialRows();
+      return;
+    }
+    try {
+      const data = JSON.parse(raw);
+
+      if (data.single) {
+        Object.keys(data.single).forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = data.single[id];
+        });
+      }
+
+      if (data.checks) {
+        const matchBox = document.getElementById('od_confirm_match');
+        const maintBox = document.getElementById('od_confirm_maintenance');
+        if (matchBox) matchBox.checked = !!data.checks.od_confirm_match;
+        if (maintBox) maintBox.checked = !!data.checks.od_confirm_maintenance;
+      }
+
+      if (Array.isArray(data.rows) && data.rows.length > 0) {
+        logBody.innerHTML = '';
+        data.rows.forEach(rowVals => {
+          logBody.appendChild(createLogRow(rowVals));
+        });
+      } else {
+        ensureInitialRows();
+      }
+    } catch (e) {
+      console.warn('Unable to load draft', e);
+      ensureInitialRows();
+    }
+  }
+
+  loadDraft();
+
+  // Save on any change
+  if (form) {
+    form.addEventListener('input', saveDraft);
+    form.addEventListener('change', saveDraft);
+  }
+
+  // Reset clears storage and rebuilds fresh rows
+  const resetBtn = document.getElementById('resetBtn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY);
+      // Let the browser clear fields, then rebuild rows
+      setTimeout(() => {
+        logBody.innerHTML = '';
+        ensureInitialRows();
+      }, 0);
+    });
+  }
+
+  // ---------- PDF GENERATION (DOWNLOAD + SHARE) ----------
+  const downloadBtn   = document.getElementById('downloadBtn');
+  const shareBtn      = document.getElementById('shareBtn');
+  const logContainer  = document.getElementById('logContainer');
+  const buttonRow     = document.getElementById('buttonRow');
+
+  async function generatePdfBlob() {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'letter');
+
+    const originalDisplay = buttonRow.style.display;
+    buttonRow.style.display = 'none';
+
+    try {
+      const canvas = await html2canvas(logContainer, {
+        scale: 2,
+        useCORS: true
+      });
+
+      const imgData   = canvas.toDataURL('image/jpeg', 0.95);
+      const pdfWidth  = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      let imgWidth  = canvas.width;
+      let imgHeight = canvas.height;
+      const scale   = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+
+      imgWidth  *= scale;
+      imgHeight *= scale;
+
+      const x = (pdfWidth  - imgWidth)  / 2;
+      const y = (pdfHeight - imgHeight) / 2;
+
+      pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+
+      return pdf.output('blob');
+    } finally {
+      buttonRow.style.display = originalDisplay || 'flex';
+    }
+  }
+
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', async () => {
+      const blob = await generatePdfBlob();
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const link = document.createElement('a');
+        link.href = e.target.result;
+        link.download = 'MileageLog.pdf';
+        link.click();
+      };
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      if (!navigator.share || !navigator.canShare) {
+        alert('Share is not supported on this device/browser. Please use Download instead.');
+        return;
+      }
+
+      const blob = await generatePdfBlob();
+      const file = new File([blob], 'MileageLog.pdf', { type: 'application/pdf' });
+
+      if (!navigator.canShare({ files: [file] })) {
+        alert('This device cannot share files. Please use Download instead.');
+        return;
+      }
+
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'Mileage Log',
+          text: 'Mileage log from VistaGeomatics'
+        });
+      } catch (err) {
+        if (err && err.name !== 'AbortError') {
+          console.error(err);
+          alert('Unable to share file. Please try Download instead.');
+        }
+      }
+    });
+  }
+</script>
+</body>
+</html>
