@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>VistaGeomatics – Mileage Log</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;700&display=swap" />
 
   <style>
     :root {
@@ -232,12 +232,14 @@
       background: #f9fbff;
     }
 
+    /* Column widths with new order:
+       Date | Vehicle | Start | Personal | Business | End */
     .log-table th:nth-child(1) { width: 12%; }  /* Date */
     .log-table th:nth-child(2) { width: 20%; }  /* Vehicle */
     .log-table th:nth-child(3) { width: 16%; }  /* Start Odo */
-    .log-table th:nth-child(4) { width: 16%; }  /* End Odo */
+    .log-table th:nth-child(4) { width: 16%; }  /* Personal km */
     .log-table th:nth-child(5) { width: 18%; }  /* Business km */
-    .log-table th:nth-child(6) { width: 18%; }  /* Personal km */
+    .log-table th:nth-child(6) { width: 18%; }  /* End Odo */
 
     .small-input {
       width: 100%;
@@ -443,9 +445,9 @@
             <th>Date</th>
             <th>Vehicle (Unit / Plate)</th>
             <th>Start Odometer</th>
-            <th>End Odometer</th>
-            <th>Business km</th>
             <th>Personal km</th>
+            <th>Business km</th>
+            <th>End Odometer</th>
           </tr>
           </thead>
           <tbody id="logBody">
@@ -517,7 +519,7 @@
       <div class="btn-row" id="buttonRow">
         <button type="reset" class="btn-secondary" id="resetBtn">Reset / Clear Month</button>
         <button type="button" class="btn-primary" id="downloadBtn">Download PDF</button>
-        <button type="button" class="btn-primary" id="shareBtn">Share PDF</button>
+        <button type="button" class="btn-primary" id="submitBtn">Submit</button>
       </div>
     </form>
   </div>
@@ -528,29 +530,34 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
-  const STORAGE_KEY = 'vistaMileageLog_v2';
+  // Bump version to avoid old data misaligning with new column order
+  const STORAGE_KEY = 'vistaMileageLog_v3';
 
   const logBody   = document.getElementById('logBody');
   const addRowBtn = document.getElementById('addRowBtn');
   const form      = document.getElementById('mileageForm');
 
   let odometerPhotoData = '';
+  let lastPrimaryPlate = '';
 
-  // DEFAULT VEHICLE LABEL = PLATE ONLY
+  // DEFAULT VEHICLE LABEL = full plate only
   function buildVehicleLabel() {
     const plate = document.getElementById('plate')?.value || '';
-    return plate;
+    return plate.trim();
   }
 
   function createLogRow(values) {
     const tr = document.createElement('tr');
+
+    // New column order:
+    // Date | Vehicle | Start | Personal | Business | End
     tr.innerHTML = `
       <td><input type="date" class="small-input" name="date[]"></td>
       <td><input type="text" class="small-input" name="vehicle[]"></td>
       <td><input type="text" class="small-input" name="start_odo[]"></td>
-      <td><input type="text" class="small-input" name="end_odo[]"></td>
-      <td><input type="text" class="small-input" name="business_km[]"></td>
       <td><input type="text" class="small-input" name="personal_km[]"></td>
+      <td><input type="text" class="small-input" name="business_km[]"></td>
+      <td><input type="text" class="small-input" name="end_odo[]"></td>
     `;
 
     const inputs = tr.querySelectorAll('input.small-input');
@@ -563,6 +570,7 @@
         }
       });
     } else {
+      // For new rows, auto-fill vehicle from primary plate (full plate), if present
       const label = buildVehicleLabel();
       if (vehicleInput && label) {
         vehicleInput.value = label;
@@ -651,6 +659,7 @@
     if (startInput) {
       startInput.addEventListener('input', () => {
         updateRowCalcs(row);
+
         saveDraft();
       });
     }
@@ -687,18 +696,28 @@
 
   ensureInitialRows();
 
-  // Sync vehicle column defaults when plate changes (plate only)
+  // Sync vehicle column defaults when plate changes – use full plate and update rows
   const plateEl = document.getElementById('plate');
   if (plateEl) {
+    lastPrimaryPlate = buildVehicleLabel();
+
     plateEl.addEventListener('input', () => {
-      const label = buildVehicleLabel();
+      const newLabel = buildVehicleLabel();
       const rows = logBody.querySelectorAll('tr');
+
       rows.forEach(row => {
         const vehicleInput = row.querySelector('input[name="vehicle[]"]');
-        if (vehicleInput && !vehicleInput.value) {
-          vehicleInput.value = label;
+        if (!vehicleInput) return;
+
+        const current = vehicleInput.value.trim();
+
+        // Update rows that are blank OR still using the old plate value
+        if (!current || current === lastPrimaryPlate) {
+          vehicleInput.value = newLabel;
         }
       });
+
+      lastPrimaryPlate = newLabel;
       saveDraft();
     });
   }
@@ -713,8 +732,8 @@
   }
 
   // ---------- ODOMETER PHOTO ----------
-  const odoPhotoBtn    = document.getElementById('odoPhotoBtn');
-  const odoPhotoInput  = document.getElementById('odoPhotoInput');
+  const odoPhotoBtn     = document.getElementById('odoPhotoBtn');
+  const odoPhotoInput   = document.getElementById('odoPhotoInput');
   const odoPhotoPreview = document.getElementById('odoPhotoPreview');
 
   function renderOdoPreview(dataUrl) {
@@ -819,6 +838,10 @@
         ensureInitialRows();
       }
 
+      // Sync lastPrimaryPlate with loaded plate value
+      const plateField = document.getElementById('plate');
+      lastPrimaryPlate = plateField ? (plateField.value || '') : '';
+
       updateTotals();
     } catch (e) {
       console.warn('Unable to load draft', e);
@@ -849,9 +872,9 @@
     });
   }
 
-  // ---------- PDF GENERATION (DOWNLOAD + SHARE) ----------
+  // ---------- PDF GENERATION (DOWNLOAD) ----------
   const downloadBtn   = document.getElementById('downloadBtn');
-  const shareBtn      = document.getElementById('shareBtn');
+  const submitBtn     = document.getElementById('submitBtn');
   const logContainer  = document.getElementById('logContainer');
   const buttonRow     = document.getElementById('buttonRow');
 
@@ -904,33 +927,26 @@
     });
   }
 
-  if (shareBtn) {
-    shareBtn.addEventListener('click', async () => {
-      if (!navigator.share || !navigator.canShare) {
-        alert('Share is not supported on this device/browser. Please use Download instead.');
-        return;
-      }
-
+  // "Submit" = generate PDF + prompt email to timesheets@vistageomatics.com
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async () => {
       const blob = await generatePdfBlob();
-      const file = new File([blob], 'MileageLog.pdf', { type: 'application/pdf' });
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        // Download first so user can attach
+        const link = document.createElement('a');
+        link.href = e.target.result;
+        link.download = 'MileageLog.pdf';
+        link.click();
 
-      if (!navigator.canShare({ files: [file] })) {
-        alert('This device cannot share files. Please use Download instead.');
-        return;
-      }
-
-      try {
-        await navigator.share({
-          files: [file],
-          title: 'Mileage Log',
-          text: 'Mileage log from VistaGeomatics'
-        });
-      } catch (err) {
-        if (err && err.name !== 'AbortError') {
-          console.error(err);
-          alert('Unable to share file. Please try Download instead.');
-        }
-      }
+        // Then open email draft
+        const subject = 'Mileage Log Submission';
+        const body = 'Please find the attached mileage log PDF for this period.';
+        window.location.href = 'mailto:timesheets@vistageomatics.com'
+          + '?subject=' + encodeURIComponent(subject)
+          + '&body=' + encodeURIComponent(body);
+      };
+      reader.readAsDataURL(blob);
     });
   }
 </script>
