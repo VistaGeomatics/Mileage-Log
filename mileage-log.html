@@ -29,7 +29,7 @@
     }
 
     .page-wrap {
-      max-width: 940px; /* slight margin so PDF doesn’t clip */
+      max-width: 940px;
       margin: 0 auto;
     }
 
@@ -210,6 +210,11 @@
       color: var(--vista-blue-dark);
     }
 
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -340,7 +345,7 @@
       box-shadow: 0 3px 8px rgba(15, 23, 42, 0.1);
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 768px) {
       .header-bar {
         flex-direction: column;
         align-items: flex-start;
@@ -350,6 +355,17 @@
       .page-title-main {
         font-size: 1.1rem;
         letter-spacing: 0.12em;
+      }
+
+      .log-table th,
+      .log-table td {
+        padding: 3px 2px;
+        font-size: 0.7rem;
+      }
+
+      .small-input {
+        padding: 4px 4px;
+        font-size: 0.7rem;
       }
     }
   </style>
@@ -441,93 +457,97 @@
           <div class="section-title">Daily Mileage Entries</div>
           <div class="section-note">Vehicle and odometer fields will auto-fill where possible.</div>
         </div>
-        <table class="log-table" id="logTable">
-          <thead>
-          <tr>
-            <th>Date</th>
-            <th>Vehicle (Unit / Plate)</th>
-            <th>Start Odometer</th>
-            <th>Personal km</th>
-            <th>Business km</th>
-            <th>End Odometer</th>
-          </tr>
-          </thead>
-          <tbody id="logBody">
-          <!-- 8 default rows -->
-          <!-- Row 1 -->
-          <tr>
-            <td><input type="date" class="small-input" name="date[]"></td>
-            <td><input type="text" class="small-input" name="vehicle[]"></td>
-            <td><input type="text" class="small-input" name="start_odo[]"></td>
-            <td><input type="text" class="small-input" name="personal_km[]"></td>
-            <td><input type="text" class="small-input" name="business_km[]"></td>
-            <td><input type="text" class="small-input" name="end_odo[]"></td>
-          </tr>
-          <!-- Row 2 -->
-          <tr>
-            <td><input type="date" class="small-input" name="date[]"></td>
-            <td><input type="text" class="small-input" name="vehicle[]"></td>
-            <td><input type="text" class="small-input" name="start_odo[]"></td>
-            <td><input type="text" class="small-input" name="personal_km[]"></td>
-            <td><input type="text" class="small-input" name="business_km[]"></td>
-            <td><input type="text" class="small-input" name="end_odo[]"></td>
-          </tr>
-          <!-- Row 3 -->
-          <tr>
-            <td><input type="date" class="small-input" name="date[]"></td>
-            <td><input type="text" class="small-input" name="vehicle[]"></td>
-            <td><input type="text" class="small-input" name="start_odo[]"></td>
-            <td><input type="text" class="small-input" name="personal_km[]"></td>
-            <td><input type="text" class="small-input" name="business_km[]"></td>
-            <td><input type="text" class="small-input" name="end_odo[]"></td>
-          </tr>
-          <!-- Row 4 -->
-          <tr>
-            <td><input type="date" class="small-input" name="date[]"></td>
-            <td><input type="text" class="small-input" name="vehicle[]"></td>
-            <td><input type="text" class="small-input" name="start_odo[]"></td>
-            <td><input type="text" class="small-input" name="personal_km[]"></td>
-            <td><input type="text" class="small-input" name="business_km[]"></td>
-            <td><input type="text" class="small-input" name="end_odo[]"></td>
-          </tr>
-          <!-- Row 5 -->
-          <tr>
-            <td><input type="date" class="small-input" name="date[]"></td>
-            <td><input type="text" class="small-input" name="vehicle[]"></td>
-            <td><input type="text" class="small-input" name="start_odo[]"></td>
-            <td><input type="text" class="small-input" name="personal_km[]"></td>
-            <td><input type="text" class="small-input" name="business_km[]"></td>
-            <td><input type="text" class="small-input" name="end_odo[]"></td>
-          </tr>
-          <!-- Row 6 -->
-          <tr>
-            <td><input type="date" class="small-input" name="date[]"></td>
-            <td><input type="text" class="small-input" name="vehicle[]"></td>
-            <td><input type="text" class="small-input" name="start_odo[]"></td>
-            <td><input type="text" class="small-input" name="personal_km[]"></td>
-            <td><input type="text" class="small-input" name="business_km[]"></td>
-            <td><input type="text" class="small-input" name="end_odo[]"></td>
-          </tr>
-          <!-- Row 7 -->
-          <tr>
-            <td><input type="date" class="small-input" name="date[]"></td>
-            <td><input type="text" class="small-input" name="vehicle[]"></td>
-            <td><input type="text" class="small-input" name="start_odo[]"></td>
-            <td><input type="text" class="small-input" name="personal_km[]"></td>
-            <td><input type="text" class="small-input" name="business_km[]"></td>
-            <td><input type="text" class="small-input" name="end_odo[]"></td>
-          </tr>
-          <!-- Row 8 -->
-          <tr>
-            <td><input type="date" class="small-input" name="date[]"></td>
-            <td><input type="text" class="small-input" name="vehicle[]"></td>
-            <td><input type="text" class="small-input" name="start_odo[]"></td>
-            <td><input type="text" class="small-input" name="personal_km[]"></td>
-            <td><input type="text" class="small-input" name="business_km[]"></td>
-            <td><input type="text" class="small-input" name="end_odo[]"></td>
-          </tr>
-          </tbody>
-        </table>
+
+        <div class="table-wrap">
+          <table class="log-table" id="logTable">
+            <thead>
+            <tr>
+              <th>Date</th>
+              <th>Vehicle (Unit / Plate)</th>
+              <th>Start Odometer</th>
+              <th>Personal km</th>
+              <th>Business km</th>
+              <th>End Odometer</th>
+            </tr>
+            </thead>
+            <tbody id="logBody">
+            <!-- 8 default rows -->
+            <!-- Row 1 -->
+            <tr>
+              <td><input type="date" class="small-input" name="date[]"></td>
+              <td><input type="text" class="small-input" name="vehicle[]"></td>
+              <td><input type="text" class="small-input" name="start_odo[]"></td>
+              <td><input type="text" class="small-input" name="personal_km[]"></td>
+              <td><input type="text" class="small-input" name="business_km[]"></td>
+              <td><input type="text" class="small-input" name="end_odo[]"></td>
+            </tr>
+            <!-- Row 2 -->
+            <tr>
+              <td><input type="date" class="small-input" name="date[]"></td>
+              <td><input type="text" class="small-input" name="vehicle[]"></td>
+              <td><input type="text" class="small-input" name="start_odo[]"></td>
+              <td><input type="text" class="small-input" name="personal_km[]"></td>
+              <td><input type="text" class="small-input" name="business_km[]"></td>
+              <td><input type="text" class="small-input" name="end_odo[]"></td>
+            </tr>
+            <!-- Row 3 -->
+            <tr>
+              <td><input type="date" class="small-input" name="date[]"></td>
+              <td><input type="text" class="small-input" name="vehicle[]"></td>
+              <td><input type="text" class="small-input" name="start_odo[]"></td>
+              <td><input type="text" class="small-input" name="personal_km[]"></td>
+              <td><input type="text" class="small-input" name="business_km[]"></td>
+              <td><input type="text" class="small-input" name="end_odo[]"></td>
+            </tr>
+            <!-- Row 4 -->
+            <tr>
+              <td><input type="date" class="small-input" name="date[]"></td>
+              <td><input type="text" class="small-input" name="vehicle[]"></td>
+              <td><input type="text" class="small-input" name="start_odo[]"></td>
+              <td><input type="text" class="small-input" name="personal_km[]"></td>
+              <td><input type="text" class="small-input" name="business_km[]"></td>
+              <td><input type="text" class="small-input" name="end_odo[]"></td>
+            </tr>
+            <!-- Row 5 -->
+            <tr>
+              <td><input type="date" class="small-input" name="date[]"></td>
+              <td><input type="text" class="small-input" name="vehicle[]"></td>
+              <td><input type="text" class="small-input" name="start_odo[]"></td>
+              <td><input type="text" class="small-input" name="personal_km[]"></td>
+              <td><input type="text" class="small-input" name="business_km[]"></td>
+              <td><input type="text" class="small-input" name="end_odo[]"></td>
+            </tr>
+            <!-- Row 6 -->
+            <tr>
+              <td><input type="date" class="small-input" name="date[]"></td>
+              <td><input type="text" class="small-input" name="vehicle[]"></td>
+              <td><input type="text" class="small-input" name="start_odo[]"></td>
+              <td><input type="text" class="small-input" name="personal_km[]"></td>
+              <td><input type="text" class="small-input" name="business_km[]"></td>
+              <td><input type="text" class="small-input" name="end_odo[]"></td>
+            </tr>
+            <!-- Row 7 -->
+            <tr>
+              <td><input type="date" class="small-input" name="date[]"></td>
+              <td><input type="text" class="small-input" name="vehicle[]"></td>
+              <td><input type="text" class="small-input" name="start_odo[]"></td>
+              <td><input type="text" class="small-input" name="personal_km[]"></td>
+              <td><input type="text" class="small-input" name="business_km[]"></td>
+              <td><input type="text" class="small-input" name="end_odo[]"></td>
+            </tr>
+            <!-- Row 8 -->
+            <tr>
+              <td><input type="date" class="small-input" name="date[]"></td>
+              <td><input type="text" class="small-input" name="vehicle[]"></td>
+              <td><input type="text" class="small-input" name="start_odo[]"></td>
+              <td><input type="text" class="small-input" name="personal_km[]"></td>
+              <td><input type="text" class="small-input" name="business_km[]"></td>
+              <td><input type="text" class="small-input" name="end_odo[]"></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+
         <div class="btn-row" style="justify-content:flex-start; margin-top:8px;">
           <button type="button" class="btn-secondary" id="addRowBtn">+ Add Row</button>
         </div>
@@ -604,7 +624,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
-  const STORAGE_KEY = 'vistaMileageLog_v5';
+  const STORAGE_KEY = 'vistaMileageLog_v6';
 
   const logBody   = document.getElementById('logBody');
   const addRowBtn = document.getElementById('addRowBtn');
@@ -612,20 +632,24 @@
 
   let odometerPhotoData = '';
 
-  // --- helpers ---
+  // ---------- helpers ----------
+
   function buildVehicleLabel() {
     const plateEl = document.getElementById('plate');
     const plate = plateEl ? plateEl.value : '';
-    return (plate || '').trim(); // FULL plate, not first character
+    return (plate || '').trim();   // full plate
   }
 
+  // auto-fill Vehicle column with full plate (only if cell empty)
   function applyPlateToRows() {
     const label = buildVehicleLabel();
     if (!label) return;
     const rows = logBody.querySelectorAll('tr');
     rows.forEach(row => {
       const vehicleInput = row.querySelector('input[name="vehicle[]"]');
-      if (vehicleInput) vehicleInput.value = label;
+      if (vehicleInput && !vehicleInput.value) {
+        vehicleInput.value = label;
+      }
     });
   }
 
@@ -770,10 +794,10 @@
     }
   }
 
-  // Init default 8 rows
+  // init the static 8 rows
   initDefaultRows();
 
-  // When plate changes, push full plate into ALL vehicle cells
+  // Plate change – fill empty vehicle cells with full plate
   const plateEl = document.getElementById('plate');
   if (plateEl) {
     plateEl.addEventListener('input', () => {
@@ -895,7 +919,6 @@
         });
       }
 
-      // after loading, make sure vehicle cells match full plate if needed
       applyPlateToRows();
       updateTotals();
     } catch (e) {
@@ -936,7 +959,19 @@
   const logContainer  = document.getElementById('logContainer');
   const buttonRow     = document.getElementById('buttonRow');
 
-  async function generatePdfBlob() {
+  function getFilename() {
+    const period = (document.getElementById('log_period')?.value || '').trim();
+    let base = 'MileageLog';
+    if (period) {
+      base += '-' + period.replace(/\s+/g, '_');
+    }
+    const suggested = base + '.pdf';
+    const user = prompt('Enter file name (without extension):', base);
+    const finalBase = (user && user.trim()) ? user.trim() : base;
+    return finalBase + '.pdf';
+  }
+
+  async function generatePdf() {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'letter');
 
@@ -969,7 +1004,7 @@
 
       pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
 
-      return pdf.output('blob');
+      return pdf;
     } finally {
       buttonRow.style.display = originalDisplay || 'flex';
     }
@@ -977,19 +1012,13 @@
 
   if (downloadBtn) {
     downloadBtn.addEventListener('click', async () => {
-      const blob = await generatePdfBlob();
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const link = document.createElement('a');
-        link.href = e.target.result;
-        link.download = 'MileageLog.pdf';
-        link.click();
-      };
-      reader.readAsDataURL(blob);
+      const filename = getFilename();
+      const pdf = await generatePdf();
+      pdf.save(filename);  // works better on iPad/Safari
     });
   }
 
-  // “Submit” – share via Web Share (user chooses Mail / Files / etc.)
+  // “Submit” – share via Web Share (user can pick Mail and send to timesheets@vistageomatics.com)
   if (shareBtn) {
     shareBtn.addEventListener('click', async () => {
       if (!navigator.share || !navigator.canShare) {
@@ -997,8 +1026,10 @@
         return;
       }
 
-      const blob = await generatePdfBlob();
-      const file = new File([blob], 'MileageLog.pdf', { type: 'application/pdf' });
+      const filename = getFilename();
+      const pdf = await generatePdf();
+      const blob = pdf.output('blob');
+      const file = new File([blob], filename, { type: 'application/pdf' });
 
       if (!navigator.canShare({ files: [file] })) {
         alert('This device cannot share files. Please use Download instead.');
@@ -1009,7 +1040,7 @@
         await navigator.share({
           files: [file],
           title: 'Mileage Log',
-          text: 'Mileage log from VistaGeomatics'
+          text: 'Mileage log – choose Mail and send to timesheets@vistageomatics.com'
         });
       } catch (err) {
         if (err && err.name !== 'AbortError') {
