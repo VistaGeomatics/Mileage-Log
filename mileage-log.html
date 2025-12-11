@@ -29,7 +29,7 @@
     }
 
     .page-wrap {
-      max-width: 940px;
+      max-width: 1000px;
       margin: 0 auto;
     }
 
@@ -116,7 +116,7 @@
     form {
       position: relative;
       z-index: 1;
-      padding: 10px 18px 18px;
+      padding: 10px 18px 16px;
       font-size: 0.86rem;
     }
 
@@ -124,7 +124,7 @@
       font-size: 0.8rem;
       font-weight: 600;
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       color: var(--text-main);
     }
 
@@ -132,12 +132,11 @@
     input[type="date"],
     textarea {
       width: 100%;
-      padding: 7px 9px;
+      padding: 6px 8px;
       border-radius: 8px;
       border: 1px solid var(--border-soft);
       background: #f9fbff;
       font-size: 0.8rem;
-      line-height: 1.35;
       color: var(--text-main);
       transition: 0.15s;
     }
@@ -151,7 +150,7 @@
     }
 
     textarea {
-      min-height: 64px;
+      min-height: 60px;
       resize: vertical;
     }
 
@@ -163,7 +162,7 @@
 
     .section-card {
       margin-top: 10px;
-      padding: 9px 10px 11px;
+      padding: 8px 10px 10px;
       border-radius: 12px;
       border: 1px solid var(--border-soft);
       background: linear-gradient(135deg, #fbfdff 0%, #f4f8fd 60%, #eff5fb 100%);
@@ -210,11 +209,6 @@
       color: var(--vista-blue-dark);
     }
 
-    .table-wrap {
-      width: 100%;
-      overflow-x: auto;
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
@@ -225,7 +219,6 @@
     th, td {
       padding: 4px 4px;
       border: 1px solid var(--border-soft);
-      vertical-align: middle;
     }
 
     th {
@@ -239,22 +232,21 @@
       background: #f9fbff;
     }
 
-    /* column widths */
-    .log-table th:nth-child(1) { width: 14%; }  /* Date */
-    .log-table th:nth-child(2) { width: 26%; }  /* Vehicle */
-    .log-table th:nth-child(3) { width: 14%; }  /* Start Odo */
-    .log-table th:nth-child(4) { width: 16%; }  /* Personal km */
-    .log-table th:nth-child(5) { width: 16%; }  /* Business km */
-    .log-table th:nth-child(6) { width: 14%; }  /* End Odo */
+    /* Column widths: Date, Vehicle, Start, Personal, Business, End */
+    .log-table th:nth-child(1) { width: 14%; }
+    .log-table th:nth-child(2) { width: 22%; }
+    .log-table th:nth-child(3) { width: 15%; }
+    .log-table th:nth-child(4) { width: 15%; }
+    .log-table th:nth-child(5) { width: 15%; }
+    .log-table th:nth-child(6) { width: 19%; }
 
     .small-input {
       width: 100%;
-      padding: 6px 6px;
+      padding: 4px 6px;
       border-radius: 7px;
       border: 1px solid var(--border-soft);
       background: #ffffff;
       font-size: 0.76rem;
-      line-height: 1.35;
       color: var(--text-main);
     }
 
@@ -345,14 +337,15 @@
       box-shadow: 0 3px 8px rgba(15, 23, 42, 0.1);
     }
 
-    .version-tag {
-      margin-top: 6px;
+
+    .footer-note {
+      margin-top: 4px;
+      text-align: right;
       font-size: 0.7rem;
       color: var(--text-muted);
-      text-align: right;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 700px) {
       .header-bar {
         flex-direction: column;
         align-items: flex-start;
@@ -362,17 +355,6 @@
       .page-title-main {
         font-size: 1.1rem;
         letter-spacing: 0.12em;
-      }
-
-      .log-table th,
-      .log-table td {
-        padding: 3px 2px;
-        font-size: 0.7rem;
-      }
-
-      .small-input {
-        padding: 4px 4px;
-        font-size: 0.7rem;
       }
     }
   </style>
@@ -464,25 +446,22 @@
           <div class="section-title">Daily Mileage Entries</div>
           <div class="section-note">Vehicle and odometer fields will auto-fill where possible.</div>
         </div>
+        <table class="log-table" id="logTable">
+          <thead>
+          <tr>
+            <th>Date</th>
+            <th>Vehicle (Unit / Plate)</th>
+            <th>Start Odometer</th>
+            <th>Personal km</th>
+            <th>Business km</th>
+            <th>End Odometer</th>
+          </tr>
+          </thead>
 
-        <div class="table-wrap">
-          <table class="log-table" id="logTable">
-            <thead>
-            <tr>
-              <th>Date</th>
-              <th>Vehicle (Unit / Plate)</th>
-              <th>Start Odometer</th>
-              <th>Personal km</th>
-              <th>Business km</th>
-              <th>End Odometer</th>
-            </tr>
-            </thead>
-            <tbody id="logBody">
-            <!-- rows created by JS -->
-            </tbody>
-          </table>
-        </div>
-
+          <tbody id="logBody">
+          <!-- Rows added by JS -->
+          </tbody>
+        </table>
         <div class="btn-row" style="justify-content:flex-start; margin-top:8px;">
           <button type="button" class="btn-secondary" id="addRowBtn">+ Add Row</button>
         </div>
@@ -496,7 +475,7 @@
         <div class="grid-2">
           <div>
             <label for="od_proof_ref">Odometer proof (photo name / reference)</label>
-            <input type="text" id="od_proof_ref" name="od_proof_ref" placeholder="e.g., IMG 2033.jpg / service record #">
+            <input type="text" id="od_proof_ref" name="od_proof_ref" placeholder="e.g., IMG_2033.jpg / service record #">
           </div>
           <div>
             <label for="od_variance">Notes (maintenance, odometer changes, variances)</label>
@@ -542,17 +521,15 @@
           <label for="notes">Notes</label>
           <textarea id="notes" name="notes" placeholder="Additional details (e.g., allocations by vehicle, corrections, comments)."></textarea>
         </div>
+        <div class="footer-note">
+          Mileage Log &mdash; Version 2.1
+        </div>
       </div>
 
       <!-- Buttons -->
       <div class="btn-row" id="buttonRow">
         <button type="reset" class="btn-secondary" id="resetBtn">Reset / Clear Month</button>
         <button type="button" class="btn-primary" id="downloadBtn">Download PDF</button>
-        <button type="button" class="btn-primary" id="shareBtn">Submit</button>
-      </div>
-
-      <div class="version-tag">
-        Mileage Log v2.1
       </div>
     </form>
   </div>
@@ -563,22 +540,28 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
-  const STORAGE_KEY = 'vistaMileageLog_v8';
+  const STORAGE_KEY = 'vistaMileageLog_v2_1';
 
   const logBody   = document.getElementById('logBody');
   const addRowBtn = document.getElementById('addRowBtn');
   const form      = document.getElementById('mileageForm');
+  const plateEl   = document.getElementById('plate');
 
   let odometerPhotoData = '';
 
-  // ---------- helpers ----------
-
+  // --- helpers ---
   function buildVehicleLabel() {
-    const plateEl = document.getElementById('plate');
-    const plate = plateEl ? plateEl.value : '';
-    return (plate || '').trim();   // full plate, no substring
+    const plateVal = (plateEl?.value || '').trim();
+    return plateVal; // FULL plate, not first character
   }
 
+  function numOrNaN(val) {
+    if (!val) return NaN;
+    const n = parseFloat(String(val).replace(',', '.'));
+    return isNaN(n) ? NaN : n;
+  }
+
+  // --- row creation ---
   function createLogRow(values) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -593,7 +576,7 @@
     const inputs = tr.querySelectorAll('input.small-input');
     const vehicleInput = tr.querySelector('input[name="vehicle[]"]');
 
-    if (values && Array.isArray(values)) {
+    if (Array.isArray(values)) {
       inputs.forEach((input, idx) => {
         if (values[idx] !== undefined) {
           input.value = values[idx];
@@ -603,6 +586,7 @@
       const label = buildVehicleLabel();
       if (vehicleInput && label) {
         vehicleInput.value = label;
+        vehicleInput.dataset.auto = 'true';
       }
     }
 
@@ -611,18 +595,23 @@
   }
 
   function ensureInitialRows() {
-    if (logBody.children.length > 0) return;
-    for (let i = 0; i < 8; i++) {
-      const row = createLogRow();
-      if (i > 0) autoFillStartOdometer(row);
-      logBody.appendChild(row);
+    if (logBody.children.length === 0) {
+      for (let i = 0; i < 8; i++) {
+        const row = createLogRow();
+        autoFillStartOdometer(row);
+        logBody.appendChild(row);
+      }
     }
   }
 
-  function numOrNaN(val) {
-    if (!val) return NaN;
-    const n = parseFloat(String(val).replace(',', '.'));
-    return isNaN(n) ? NaN : n;
+  function autoFillStartOdometer(row) {
+    const prev = row.previousElementSibling;
+    if (!prev) return;
+    const prevEnd = prev.querySelector('input[name="end_odo[]"]');
+    const start   = row.querySelector('input[name="start_odo[]"]');
+    if (prevEnd && start) {
+      start.value = prevEnd.value || '';
+    }
   }
 
   function updateRowCalcs(row) {
@@ -668,21 +657,20 @@
     if (totalPerInput) totalPerInput.value = totalPer ? String(totalPer) : '';
   }
 
-  function autoFillStartOdometer(row) {
-    const prev = row.previousElementSibling;
-    if (!prev) return;
-    const prevEnd = prev.querySelector('input[name="end_odo[]"]');
-    const start   = row.querySelector('input[name="start_odo[]"]');
-    if (prevEnd && start) {
-      start.value = prevEnd.value || '';
-    }
-  }
-
   function attachRowEvents(row) {
     const startInput = row.querySelector('input[name="start_odo[]"]');
     const endInput   = row.querySelector('input[name="end_odo[]"]');
     const busInput   = row.querySelector('input[name="business_km[]"]');
     const perInput   = row.querySelector('input[name="personal_km[]"]');
+    const vehicleInput = row.querySelector('input[name="vehicle[]"]');
+
+    if (vehicleInput) {
+      vehicleInput.addEventListener('input', () => {
+        // user edited manually -> no longer auto
+        vehicleInput.dataset.auto = 'false';
+        saveDraft();
+      });
+    }
 
     if (startInput) {
       startInput.addEventListener('input', () => {
@@ -720,38 +708,7 @@
     }
   }
 
-  function applyPlateToRows() {
-    const label = buildVehicleLabel();
-    if (!label) return;
-    const rows = logBody.querySelectorAll('tr');
-    rows.forEach(row => {
-      const vehicleInput = row.querySelector('input[name="vehicle[]"]');
-      if (vehicleInput && !vehicleInput.value) {
-        vehicleInput.value = label;
-      }
-    });
-  }
-
-  // Plate change – fill empty vehicle cells with full plate
-  const plateEl = document.getElementById('plate');
-  if (plateEl) {
-    plateEl.addEventListener('input', () => {
-      applyPlateToRows();
-      saveDraft();
-    });
-  }
-
-  if (addRowBtn) {
-    addRowBtn.addEventListener('click', () => {
-      const row = createLogRow();
-      autoFillStartOdometer(row);
-      logBody.appendChild(row);
-      applyPlateToRows();
-      saveDraft();
-    });
-  }
-
-  // ---------- ODOMETER PHOTO ----------
+  // --- odometer photo ---
   const odoPhotoBtn     = document.getElementById('odoPhotoBtn');
   const odoPhotoInput   = document.getElementById('odoPhotoInput');
   const odoPhotoPreview = document.getElementById('odoPhotoPreview');
@@ -783,7 +740,7 @@
     });
   }
 
-  // ---------- LOCAL STORAGE ----------
+  // --- local storage ---
   function saveDraft() {
     try {
       const data = { single: {}, rows: [], checks: {} };
@@ -822,7 +779,6 @@
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       ensureInitialRows();
-      applyPlateToRows();
       updateTotals();
       return;
     }
@@ -859,13 +815,11 @@
         ensureInitialRows();
       }
 
-      applyPlateToRows();
       updateTotals();
     } catch (e) {
       console.warn('Unable to load draft', e);
       logBody.innerHTML = '';
       ensureInitialRows();
-      applyPlateToRows();
       updateTotals();
     }
   }
@@ -886,30 +840,34 @@
       setTimeout(() => {
         logBody.innerHTML = '';
         ensureInitialRows();
-        applyPlateToRows();
         updateTotals();
       }, 0);
     });
   }
 
-  // ---------- PDF GENERATION ----------
-  const downloadBtn   = document.getElementById('downloadBtn');
-  const shareBtn      = document.getElementById('shareBtn');
-  const logContainer  = document.getElementById('logContainer');
-  const buttonRow     = document.getElementById('buttonRow');
-
-  function getFilename() {
-    const period = (document.getElementById('log_period')?.value || '').trim();
-    let base = 'MileageLog';
-    if (period) {
-      base += '-' + period.replace(/\s+/g, '_');
-    }
-    const user = prompt('Enter file name (without extension):', base);
-    const finalBase = (user && user.trim()) ? user.trim() : base;
-    return finalBase + '.pdf';
+  // when plate changes, refresh any auto vehicle cells (both initial 8 and new rows)
+  if (plateEl) {
+    plateEl.addEventListener('input', () => {
+      const label = buildVehicleLabel();
+      const rows = logBody.querySelectorAll('tr');
+      rows.forEach(row => {
+        const v = row.querySelector('input[name="vehicle[]"]');
+        if (!v) return;
+        if (!v.value || v.dataset.auto === 'true') {
+          v.value = label;
+          v.dataset.auto = 'true';
+        }
+      });
+      saveDraft();
+    });
   }
 
-  async function generatePdf() {
+  // --- PDF generation (download) ---
+  const downloadBtn  = document.getElementById('downloadBtn');
+  const logContainer = document.getElementById('logContainer');
+  const buttonRow    = document.getElementById('buttonRow');
+
+  async function generatePdfBlob() {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'letter');
 
@@ -918,31 +876,27 @@
 
     try {
       const canvas = await html2canvas(logContainer, {
-        scale: 2,
-        useCORS: true,
-        scrollY: -window.scrollY
+        scale: 1.7,  // slight downscale so nothing is cut off
+        useCORS: true
       });
 
-      const imgData    = canvas.toDataURL('image/jpeg', 0.95);
-      const pdfWidth   = pdf.internal.pageSize.getWidth();
-      const pdfHeight  = pdf.internal.pageSize.getHeight();
-      const margin     = 6;
-      const maxWidth   = pdfWidth  - margin * 2;
-      const maxHeight  = pdfHeight - margin * 2;
+      const imgData   = canvas.toDataURL('image/jpeg', 0.95);
+      const pdfWidth  = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
 
       let imgWidth  = canvas.width;
       let imgHeight = canvas.height;
-      const scale   = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
+      const scale   = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
 
       imgWidth  *= scale;
       imgHeight *= scale;
 
-      const x = margin + (maxWidth  - imgWidth)  / 2;
-      const y = margin;
+      const x = (pdfWidth  - imgWidth)  / 2;
+      const y = (pdfHeight - imgHeight) / 2;
 
       pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
 
-      return pdf;
+      return pdf.output('blob');
     } finally {
       buttonRow.style.display = originalDisplay || 'flex';
     }
@@ -950,39 +904,24 @@
 
   if (downloadBtn) {
     downloadBtn.addEventListener('click', async () => {
-      const filename = getFilename();
-      const pdf = await generatePdf();
-      pdf.save(filename);
+      const defaultName = 'MileageLog.pdf';
+      const fileName = window.prompt('Enter file name for the PDF:', defaultName) || defaultName;
+
+      const blob = await generatePdfBlob();
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const link = document.createElement('a');
+        link.href = e.target.result;
+        link.download = fileName;
+        link.click();
+      };
+      reader.readAsDataURL(blob);
     });
   }
 
-  if (shareBtn) {
-    shareBtn.addEventListener('click', async () => {
-      const filename = getFilename();
-      const pdf = await generatePdf();
-      const blob = pdf.output('blob');
-
-      const canShareFiles = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
-
-      if (canShareFiles) {
-        try {
-          const file = new File([blob], filename, { type: 'application/pdf' });
-          await navigator.share({
-            files: [file],
-            title: 'Mileage Log',
-            text: 'Mileage log – choose Mail and send to timesheets@vistageomatics.com'
-          });
-          return;
-        } catch (err) {
-          if (err && err.name === 'AbortError') return;
-          console.warn('Share failed, falling back to download.', err);
-        }
-      }
-
-      pdf.save(filename);
-      alert('The PDF has been downloaded. Please email it to timesheets@vistageomatics.com.');
-    });
-  }
+  // initial rows if nothing loaded
+  ensureInitialRows();
+  updateTotals();
 </script>
 </body>
 </html>
