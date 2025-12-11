@@ -846,18 +846,46 @@
   const logContainer  = document.getElementById('logContainer');
   const buttonRow     = document.getElementById('buttonRow');
 
-  async function generatePdfBlob() {
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF('p', 'mm', 'letter');
+ async function generatePdfBlob() {
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF('p', 'mm', 'letter');
 
-    const originalDisplay = buttonRow.style.display;
-    buttonRow.style.display = 'none';
+  const originalDisplay = buttonRow.style.display;
+  buttonRow.style.display = 'none';
 
-    try {
-      const canvas = await html2canvas(logContainer, {
-        scale: 2,
-        useCORS: true
-      });
+  // turn on "pdf mode" so inputs are taller when captured
+  document.body.classList.add('pdf-export');
+
+  try {
+    const canvas = await html2canvas(logContainer, {
+      scale: 2,
+      useCORS: true
+    });
+
+    const imgData   = canvas.toDataURL('image/jpeg', 0.95);
+    const pdfWidth  = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    let imgWidth  = canvas.width;
+    let imgHeight = canvas.height;
+    const scale   = Math.min((pdfWidth - 8) / imgWidth, (pdfHeight - 8) / imgHeight);
+
+    imgWidth  *= scale;
+    imgHeight *= scale;
+
+    const x = (pdfWidth  - imgWidth)  / 2;
+    const y = (pdfHeight - imgHeight) / 2;
+
+    pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+
+    return pdf.output('blob');
+  } finally {
+    // restore normal layout
+    document.body.classList.remove('pdf-export');
+    buttonRow.style.display = originalDisplay || 'flex';
+  }
+}
+
 
       const imgData   = canvas.toDataURL('image/jpeg', 0.95);
       const pdfWidth  = pdf.internal.pageSize.getWidth();
