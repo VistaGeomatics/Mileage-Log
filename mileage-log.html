@@ -29,7 +29,7 @@
     }
 
     .page-wrap {
-      max-width: 1000px;
+      max-width: 940px; /* slightly smaller for PDF breathing room */
       margin: 0 auto;
     }
 
@@ -116,7 +116,7 @@
     form {
       position: relative;
       z-index: 1;
-      padding: 10px 18px 16px;
+      padding: 10px 18px 18px;
       font-size: 0.86rem;
     }
 
@@ -124,11 +124,10 @@
       font-size: 0.8rem;
       font-weight: 600;
       display: block;
-      margin-bottom: 3px;
+      margin-bottom: 4px;
       color: var(--text-main);
     }
 
-    /* Input sizing – made taller so text isn’t clipped in PDF */
     input[type="text"],
     input[type="date"],
     textarea {
@@ -139,7 +138,6 @@
       background: #f9fbff;
       font-size: 0.8rem;
       line-height: 1.35;
-      min-height: 30px;
       color: var(--text-main);
       transition: 0.15s;
     }
@@ -153,20 +151,8 @@
     }
 
     textarea {
-      min-height: 60px;
+      min-height: 64px;
       resize: vertical;
-    }
-
-    .small-input {
-      width: 100%;
-      padding: 6px 8px;
-      border-radius: 7px;
-      border: 1px solid var(--border-soft);
-      background: #ffffff;
-      font-size: 0.76rem;
-      line-height: 1.35;
-      min-height: 28px;
-      color: var(--text-main);
     }
 
     .grid-2 {
@@ -177,7 +163,7 @@
 
     .section-card {
       margin-top: 10px;
-      padding: 8px 10px 10px;
+      padding: 9px 10px 11px;
       border-radius: 12px;
       border: 1px solid var(--border-soft);
       background: linear-gradient(135deg, #fbfdff 0%, #f4f8fd 60%, #eff5fb 100%);
@@ -234,6 +220,7 @@
     th, td {
       padding: 4px 4px;
       border: 1px solid var(--border-soft);
+      vertical-align: middle;
     }
 
     th {
@@ -247,12 +234,24 @@
       background: #f9fbff;
     }
 
-    .log-table th:nth-child(1) { width: 12%; }  /* Date */
+    /* column widths */
+    .log-table th:nth-child(1) { width: 14%; }  /* Date */
     .log-table th:nth-child(2) { width: 22%; }  /* Vehicle */
-    .log-table th:nth-child(3) { width: 18%; }  /* Start Odo */
+    .log-table th:nth-child(3) { width: 16%; }  /* Start Odo */
     .log-table th:nth-child(4) { width: 16%; }  /* Personal km */
     .log-table th:nth-child(5) { width: 16%; }  /* Business km */
     .log-table th:nth-child(6) { width: 16%; }  /* End Odo */
+
+    .small-input {
+      width: 100%;
+      padding: 6px 6px;
+      border-radius: 7px;
+      border: 1px solid var(--border-soft);
+      background: #ffffff;
+      font-size: 0.76rem;
+      line-height: 1.35;
+      color: var(--text-main);
+    }
 
     .btn-row {
       display: flex;
@@ -454,7 +453,79 @@
           </tr>
           </thead>
           <tbody id="logBody">
-          <!-- Rows added by JS -->
+          <!-- 8 default rows -->
+          <!-- Row 1 -->
+          <tr>
+            <td><input type="date" class="small-input" name="date[]"></td>
+            <td><input type="text" class="small-input" name="vehicle[]"></td>
+            <td><input type="text" class="small-input" name="start_odo[]"></td>
+            <td><input type="text" class="small-input" name="personal_km[]"></td>
+            <td><input type="text" class="small-input" name="business_km[]"></td>
+            <td><input type="text" class="small-input" name="end_odo[]"></td>
+          </tr>
+          <!-- Row 2 -->
+          <tr>
+            <td><input type="date" class="small-input" name="date[]"></td>
+            <td><input type="text" class="small-input" name="vehicle[]"></td>
+            <td><input type="text" class="small-input" name="start_odo[]"></td>
+            <td><input type="text" class="small-input" name="personal_km[]"></td>
+            <td><input type="text" class="small-input" name="business_km[]"></td>
+            <td><input type="text" class="small-input" name="end_odo[]"></td>
+          </tr>
+          <!-- Row 3 -->
+          <tr>
+            <td><input type="date" class="small-input" name="date[]"></td>
+            <td><input type="text" class="small-input" name="vehicle[]"></td>
+            <td><input type="text" class="small-input" name="start_odo[]"></td>
+            <td><input type="text" class="small-input" name="personal_km[]"></td>
+            <td><input type="text" class="small-input" name="business_km[]"></td>
+            <td><input type="text" class="small-input" name="end_odo[]"></td>
+          </tr>
+          <!-- Row 4 -->
+          <tr>
+            <td><input type="date" class="small-input" name="date[]"></td>
+            <td><input type="text" class="small-input" name="vehicle[]"></td>
+            <td><input type="text" class="small-input" name="start_odo[]"></td>
+            <td><input type="text" class="small-input" name="personal_km[]"></td>
+            <td><input type="text" class="small-input" name="business_km[]"></td>
+            <td><input type="text" class="small-input" name="end_odo[]"></td>
+          </tr>
+          <!-- Row 5 -->
+          <tr>
+            <td><input type="date" class="small-input" name="date[]"></td>
+            <td><input type="text" class="small-input" name="vehicle[]"></td>
+            <td><input type="text" class="small-input" name="start_odo[]"></td>
+            <td><input type="text" class="small-input" name="personal_km[]"></td>
+            <td><input type="text" class="small-input" name="business_km[]"></td>
+            <td><input type="text" class="small-input" name="end_odo[]"></td>
+          </tr>
+          <!-- Row 6 -->
+          <tr>
+            <td><input type="date" class="small-input" name="date[]"></td>
+            <td><input type="text" class="small-input" name="vehicle[]"></td>
+            <td><input type="text" class="small-input" name="start_odo[]"></td>
+            <td><input type="text" class="small-input" name="personal_km[]"></td>
+            <td><input type="text" class="small-input" name="business_km[]"></td>
+            <td><input type="text" class="small-input" name="end_odo[]"></td>
+          </tr>
+          <!-- Row 7 -->
+          <tr>
+            <td><input type="date" class="small-input" name="date[]"></td>
+            <td><input type="text" class="small-input" name="vehicle[]"></td>
+            <td><input type="text" class="small-input" name="start_odo[]"></td>
+            <td><input type="text" class="small-input" name="personal_km[]"></td>
+            <td><input type="text" class="small-input" name="business_km[]"></td>
+            <td><input type="text" class="small-input" name="end_odo[]"></td>
+          </tr>
+          <!-- Row 8 -->
+          <tr>
+            <td><input type="date" class="small-input" name="date[]"></td>
+            <td><input type="text" class="small-input" name="vehicle[]"></td>
+            <td><input type="text" class="small-input" name="start_odo[]"></td>
+            <td><input type="text" class="small-input" name="personal_km[]"></td>
+            <td><input type="text" class="small-input" name="business_km[]"></td>
+            <td><input type="text" class="small-input" name="end_odo[]"></td>
+          </tr>
           </tbody>
         </table>
         <div class="btn-row" style="justify-content:flex-start; margin-top:8px;">
@@ -470,7 +541,7 @@
         <div class="grid-2">
           <div>
             <label for="od_proof_ref">Odometer proof (photo name / reference)</label>
-            <input type="text" id="od_proof_ref" name="od_proof_ref" placeholder="e.g., IMG_2033.jpg / service record #">
+            <input type="text" id="od_proof_ref" name="od_proof_ref" placeholder="e.g., IMG 2033.jpg / service record #">
           </div>
           <div>
             <label for="od_variance">Notes (maintenance, odometer changes, variances)</label>
@@ -522,7 +593,7 @@
       <div class="btn-row" id="buttonRow">
         <button type="reset" class="btn-secondary" id="resetBtn">Reset / Clear Month</button>
         <button type="button" class="btn-primary" id="downloadBtn">Download PDF</button>
-        <button type="button" class="btn-primary" id="shareBtn">Share PDF</button>
+        <button type="button" class="btn-primary" id="shareBtn">Submit</button>
       </div>
     </form>
   </div>
@@ -533,7 +604,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
-  const STORAGE_KEY = 'vistaMileageLog_v3';
+  const STORAGE_KEY = 'vistaMileageLog_v4';
 
   const logBody   = document.getElementById('logBody');
   const addRowBtn = document.getElementById('addRowBtn');
@@ -541,7 +612,7 @@
 
   let odometerPhotoData = '';
 
-  // Build vehicle label from full plate
+  // VEHICLE LABEL = full plate
   function buildVehicleLabel() {
     const plate = document.getElementById('plate')?.value || '';
     return plate;
@@ -555,10 +626,10 @@
       <td><input type="text" class="small-input" name="start_odo[]"></td>
       <td><input type="text" class="small-input" name="personal_km[]"></td>
       <td><input type="text" class="small-input" name="business_km[]"></td>
-      <td><input type="text" class="small-input" name="end_odo[]" readonly></td>
+      <td><input type="text" class="small-input" name="end_odo[]"></td>
     `;
 
-    const inputs       = tr.querySelectorAll('input.small-input');
+    const inputs = tr.querySelectorAll('input.small-input');
     const vehicleInput = tr.querySelector('input[name="vehicle[]"]');
 
     if (values && Array.isArray(values)) {
@@ -578,14 +649,22 @@
     return tr;
   }
 
-  function ensureInitialRows() {
-    if (logBody.children.length === 0) {
-      for (let i = 0; i < 8; i++) {
-        const row = createLogRow();
-        autoFillStartOdometer(row);
-        logBody.appendChild(row);
+  // Attach events + auto-fill for all existing default rows
+  function initDefaultRows() {
+    const rows = Array.from(logBody.querySelectorAll('tr'));
+    rows.forEach((row, index) => {
+      attachRowEvents(row);
+      // Vehicle defaults from plate
+      const vehicleInput = row.querySelector('input[name="vehicle[]"]');
+      const label = buildVehicleLabel();
+      if (vehicleInput && label && !vehicleInput.value) {
+        vehicleInput.value = label;
       }
-    }
+      // Auto-fill start odo from previous row end
+      if (index > 0) {
+        autoFillStartOdometer(row);
+      }
+    });
   }
 
   function numOrNaN(val) {
@@ -612,8 +691,6 @@
       if (!isNaN(endVal)) {
         endInput.value = String(endVal);
       }
-    } else {
-      endInput.value = '';
     }
 
     updateTotals();
@@ -651,6 +728,7 @@
 
   function attachRowEvents(row) {
     const startInput = row.querySelector('input[name="start_odo[]"]');
+    const endInput   = row.querySelector('input[name="end_odo[]"]');
     const busInput   = row.querySelector('input[name="business_km[]"]');
     const perInput   = row.querySelector('input[name="personal_km[]"]');
 
@@ -674,9 +752,24 @@
         saveDraft();
       });
     }
+
+    if (endInput) {
+      endInput.addEventListener('change', () => {
+        const next = row.nextElementSibling;
+        if (next) {
+          const nextStart = next.querySelector('input[name="start_odo[]"]');
+          if (nextStart) {
+            nextStart.value = endInput.value;
+          }
+        }
+        updateTotals();
+        saveDraft();
+      });
+    }
   }
 
-  ensureInitialRows();
+  // Init default 8 rows
+  initDefaultRows();
 
   // Sync vehicle column defaults when plate changes
   const plateEl = document.getElementById('plate');
@@ -735,7 +828,7 @@
     });
   }
 
-  // ---------- LOCAL STORAGE ----------
+  // ---------- LOCAL STORAGE (AUTO-SAVE / AUTO-LOAD) ----------
   function saveDraft() {
     try {
       const data = { single: {}, rows: [], checks: {} };
@@ -754,7 +847,7 @@
 
       data.single.odometer_photo = odometerPhotoData || '';
 
-      data.checks.od_confirm_match       = document.getElementById('od_confirm_match')?.checked || false;
+      data.checks.od_confirm_match = document.getElementById('od_confirm_match')?.checked || false;
       data.checks.od_confirm_maintenance = document.getElementById('od_confirm_maintenance')?.checked || false;
 
       const rows = Array.from(logBody.querySelectorAll('tr'));
@@ -773,7 +866,6 @@
   function loadDraft() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      ensureInitialRows();
       updateTotals();
       return;
     }
@@ -807,14 +899,12 @@
           logBody.appendChild(row);
         });
       } else {
-        ensureInitialRows();
+        // keep the default 8 already in HTML
       }
 
       updateTotals();
     } catch (e) {
       console.warn('Unable to load draft', e);
-      logBody.innerHTML = '';
-      ensureInitialRows();
       updateTotals();
     }
   }
@@ -833,73 +923,54 @@
       odometerPhotoData = '';
       renderOdoPreview('');
       setTimeout(() => {
+        // restore 8 blank rows
         logBody.innerHTML = '';
-        ensureInitialRows();
+        for (let i = 0; i < 8; i++) {
+          const row = createLogRow();
+          if (i > 0) autoFillStartOdometer(row);
+          logBody.appendChild(row);
+        }
         updateTotals();
       }, 0);
     });
   }
 
-  // ---------- PDF GENERATION (DOWNLOAD + SHARE) ----------
+  // ---------- PDF GENERATION (DOWNLOAD + “SUBMIT”) ----------
   const downloadBtn   = document.getElementById('downloadBtn');
   const shareBtn      = document.getElementById('shareBtn');
   const logContainer  = document.getElementById('logContainer');
   const buttonRow     = document.getElementById('buttonRow');
 
- async function generatePdfBlob() {
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('p', 'mm', 'letter');
+  async function generatePdfBlob() {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'letter');
 
-  const originalDisplay = buttonRow.style.display;
-  buttonRow.style.display = 'none';
+    const originalDisplay = buttonRow.style.display;
+    buttonRow.style.display = 'none';
 
-  // turn on "pdf mode" so inputs are taller when captured
-  document.body.classList.add('pdf-export');
+    try {
+      const canvas = await html2canvas(logContainer, {
+        scale: 2,
+        useCORS: true,
+        scrollY: -window.scrollY
+      });
 
-  try {
-    const canvas = await html2canvas(logContainer, {
-      scale: 2,
-      useCORS: true
-    });
-
-    const imgData   = canvas.toDataURL('image/jpeg', 0.95);
-    const pdfWidth  = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-
-    let imgWidth  = canvas.width;
-    let imgHeight = canvas.height;
-    const scale   = Math.min((pdfWidth - 8) / imgWidth, (pdfHeight - 8) / imgHeight);
-
-    imgWidth  *= scale;
-    imgHeight *= scale;
-
-    const x = (pdfWidth  - imgWidth)  / 2;
-    const y = (pdfHeight - imgHeight) / 2;
-
-    pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
-
-    return pdf.output('blob');
-  } finally {
-    // restore normal layout
-    document.body.classList.remove('pdf-export');
-    buttonRow.style.display = originalDisplay || 'flex';
-  }
-}
-
-
-      const imgData   = canvas.toDataURL('image/jpeg', 0.95);
-      const pdfWidth  = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgData    = canvas.toDataURL('image/jpeg', 0.95);
+      const pdfWidth   = pdf.internal.pageSize.getWidth();
+      const pdfHeight  = pdf.internal.pageSize.getHeight();
+      const margin     = 6;
+      const maxWidth   = pdfWidth  - margin * 2;
+      const maxHeight  = pdfHeight - margin * 2;
 
       let imgWidth  = canvas.width;
       let imgHeight = canvas.height;
-      const scale   = Math.min((pdfWidth - 8) / imgWidth, (pdfHeight - 8) / imgHeight);
+      const scale   = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
 
       imgWidth  *= scale;
       imgHeight *= scale;
 
-      const x = (pdfWidth  - imgWidth)  / 2;
-      const y = (pdfHeight - imgHeight) / 2;
+      const x = margin + (maxWidth  - imgWidth)  / 2;
+      const y = margin;
 
       pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
 
@@ -923,10 +994,11 @@
     });
   }
 
+  // “Submit” – share via Web Share (can’t auto-email from browser)
   if (shareBtn) {
     shareBtn.addEventListener('click', async () => {
       if (!navigator.share || !navigator.canShare) {
-        alert('Share is not supported on this device/browser. Please use Download instead.');
+        alert('Submit/Share is not supported on this device/browser. Please use Download instead.');
         return;
       }
 
