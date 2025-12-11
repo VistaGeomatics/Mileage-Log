@@ -29,7 +29,7 @@
     }
 
     .page-wrap {
-      max-width: 940px; /* slightly smaller for PDF breathing room */
+      max-width: 940px; /* slight margin so PDF doesn’t clip */
       margin: 0 auto;
     }
 
@@ -604,7 +604,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
-  const STORAGE_KEY = 'vistaMileageLog_v4';
+  const STORAGE_KEY = 'vistaMileageLog_v5';
 
   const logBody   = document.getElementById('logBody');
   const addRowBtn = document.getElementById('addRowBtn');
@@ -612,10 +612,21 @@
 
   let odometerPhotoData = '';
 
-  // VEHICLE LABEL = full plate
+  // --- helpers ---
   function buildVehicleLabel() {
-    const plate = document.getElementById('plate')?.value || '';
-    return plate;
+    const plateEl = document.getElementById('plate');
+    const plate = plateEl ? plateEl.value : '';
+    return (plate || '').trim(); // FULL plate, not first character
+  }
+
+  function applyPlateToRows() {
+    const label = buildVehicleLabel();
+    if (!label) return;
+    const rows = logBody.querySelectorAll('tr');
+    rows.forEach(row => {
+      const vehicleInput = row.querySelector('input[name="vehicle[]"]');
+      if (vehicleInput) vehicleInput.value = label;
+    });
   }
 
   function createLogRow(values) {
@@ -649,22 +660,13 @@
     return tr;
   }
 
-  // Attach events + auto-fill for all existing default rows
   function initDefaultRows() {
     const rows = Array.from(logBody.querySelectorAll('tr'));
     rows.forEach((row, index) => {
       attachRowEvents(row);
-      // Vehicle defaults from plate
-      const vehicleInput = row.querySelector('input[name="vehicle[]"]');
-      const label = buildVehicleLabel();
-      if (vehicleInput && label && !vehicleInput.value) {
-        vehicleInput.value = label;
-      }
-      // Auto-fill start odo from previous row end
-      if (index > 0) {
-        autoFillStartOdometer(row);
-      }
+      if (index > 0) autoFillStartOdometer(row);
     });
+    applyPlateToRows();
   }
 
   function numOrNaN(val) {
@@ -771,18 +773,11 @@
   // Init default 8 rows
   initDefaultRows();
 
-  // Sync vehicle column defaults when plate changes
+  // When plate changes, push full plate into ALL vehicle cells
   const plateEl = document.getElementById('plate');
   if (plateEl) {
     plateEl.addEventListener('input', () => {
-      const label = buildVehicleLabel();
-      const rows = logBody.querySelectorAll('tr');
-      rows.forEach(row => {
-        const vehicleInput = row.querySelector('input[name="vehicle[]"]');
-        if (vehicleInput && !vehicleInput.value) {
-          vehicleInput.value = label;
-        }
-      });
+      applyPlateToRows();
       saveDraft();
     });
   }
@@ -828,7 +823,7 @@
     });
   }
 
-  // ---------- LOCAL STORAGE (AUTO-SAVE / AUTO-LOAD) ----------
+  // ---------- LOCAL STORAGE ----------
   function saveDraft() {
     try {
       const data = { single: {}, rows: [], checks: {} };
@@ -898,10 +893,10 @@
           const row = createLogRow(rowVals);
           logBody.appendChild(row);
         });
-      } else {
-        // keep the default 8 already in HTML
       }
 
+      // after loading, make sure vehicle cells match full plate if needed
+      applyPlateToRows();
       updateTotals();
     } catch (e) {
       console.warn('Unable to load draft', e);
@@ -923,19 +918,19 @@
       odometerPhotoData = '';
       renderOdoPreview('');
       setTimeout(() => {
-        // restore 8 blank rows
         logBody.innerHTML = '';
         for (let i = 0; i < 8; i++) {
           const row = createLogRow();
           if (i > 0) autoFillStartOdometer(row);
           logBody.appendChild(row);
         }
+        applyPlateToRows();
         updateTotals();
       }, 0);
     });
   }
 
-  // ---------- PDF GENERATION (DOWNLOAD + “SUBMIT”) ----------
+  // ---------- PDF GENERATION ----------
   const downloadBtn   = document.getElementById('downloadBtn');
   const shareBtn      = document.getElementById('shareBtn');
   const logContainer  = document.getElementById('logContainer');
@@ -994,7 +989,7 @@
     });
   }
 
-  // “Submit” – share via Web Share (can’t auto-email from browser)
+  // “Submit” – share via Web Share (user chooses Mail / Files / etc.)
   if (shareBtn) {
     shareBtn.addEventListener('click', async () => {
       if (!navigator.share || !navigator.canShare) {
