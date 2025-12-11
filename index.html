@@ -241,11 +241,11 @@
 
     /* column widths */
     .log-table th:nth-child(1) { width: 14%; }  /* Date */
-    .log-table th:nth-child(2) { width: 22%; }  /* Vehicle */
-    .log-table th:nth-child(3) { width: 16%; }  /* Start Odo */
+    .log-table th:nth-child(2) { width: 26%; }  /* Vehicle */
+    .log-table th:nth-child(3) { width: 14%; }  /* Start Odo */
     .log-table th:nth-child(4) { width: 16%; }  /* Personal km */
     .log-table th:nth-child(5) { width: 16%; }  /* Business km */
-    .log-table th:nth-child(6) { width: 16%; }  /* End Odo */
+    .log-table th:nth-child(6) { width: 14%; }  /* End Odo */
 
     .small-input {
       width: 100%;
@@ -343,6 +343,13 @@
       object-fit: cover;
       background: #e5ecf7;
       box-shadow: 0 3px 8px rgba(15, 23, 42, 0.1);
+    }
+
+    .version-tag {
+      margin-top: 6px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-align: right;
     }
 
     @media (max-width: 768px) {
@@ -615,6 +622,10 @@
         <button type="button" class="btn-primary" id="downloadBtn">Download PDF</button>
         <button type="button" class="btn-primary" id="shareBtn">Submit</button>
       </div>
+
+      <div class="version-tag">
+        Mileage Log v2.1
+      </div>
     </form>
   </div>
 </div>
@@ -624,7 +635,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
-  const STORAGE_KEY = 'vistaMileageLog_v6';
+  const STORAGE_KEY = 'vistaMileageLog_v7';
 
   const logBody   = document.getElementById('logBody');
   const addRowBtn = document.getElementById('addRowBtn');
@@ -637,7 +648,7 @@
   function buildVehicleLabel() {
     const plateEl = document.getElementById('plate');
     const plate = plateEl ? plateEl.value : '';
-    return (plate || '').trim();   // full plate
+    return (plate || '').trim();   // full plate, no substring
   }
 
   // auto-fill Vehicle column with full plate (only if cell empty)
@@ -965,7 +976,6 @@
     if (period) {
       base += '-' + period.replace(/\s+/g, '_');
     }
-    const suggested = base + '.pdf';
     const user = prompt('Enter file name (without extension):', base);
     const finalBase = (user && user.trim()) ? user.trim() : base;
     return finalBase + '.pdf';
@@ -1014,40 +1024,40 @@
     downloadBtn.addEventListener('click', async () => {
       const filename = getFilename();
       const pdf = await generatePdf();
-      pdf.save(filename);  // works better on iPad/Safari
+      pdf.save(filename);  // works well on iPad/Safari
     });
   }
 
-  // “Submit” – share via Web Share (user can pick Mail and send to timesheets@vistageomatics.com)
+  // “Submit” – try Web Share; if not supported, fall back to download + instructions
   if (shareBtn) {
     shareBtn.addEventListener('click', async () => {
-      if (!navigator.share || !navigator.canShare) {
-        alert('Submit/Share is not supported on this device/browser. Please use Download instead.');
-        return;
-      }
-
       const filename = getFilename();
       const pdf = await generatePdf();
       const blob = pdf.output('blob');
-      const file = new File([blob], filename, { type: 'application/pdf' });
 
-      if (!navigator.canShare({ files: [file] })) {
-        alert('This device cannot share files. Please use Download instead.');
-        return;
-      }
+      const canFileShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
-      try {
-        await navigator.share({
-          files: [file],
-          title: 'Mileage Log',
-          text: 'Mileage log – choose Mail and send to timesheets@vistageomatics.com'
-        });
-      } catch (err) {
-        if (err && err.name !== 'AbortError') {
-          console.error(err);
-          alert('Unable to share file. Please try Download instead.');
+      if (canFileShare) {
+        try {
+          const file = new File([blob], filename, { type: 'application/pdf' });
+          // Try share with file (works on newer iPadOS)
+          await navigator.share({
+            files: [file],
+            title: 'Mileage Log',
+            text: 'Mileage log – choose Mail and send to timesheets@vistageomatics.com'
+          });
+          return;
+        } catch (err) {
+          if (err && err.name === 'AbortError') {
+            return; // user cancelled share
+          }
+          console.warn('Share with file failed, falling back to download.', err);
         }
       }
+
+      // Fallback: save locally, then user emails manually
+      pdf.save(filename);
+      alert('Submit via email is not fully supported on this device. The PDF has been downloaded. Please email it to timesheets@vistageomatics.com.');
     });
   }
 </script>
