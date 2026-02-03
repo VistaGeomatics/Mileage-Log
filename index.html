@@ -569,7 +569,7 @@
       </div>
 
       <div class="version-tag">
-        Mileage Log v2.3
+        Mileage Log v2.3.1
       </div>
     </form>
   </div>
@@ -767,10 +767,15 @@
   // Plate change – fill / upgrade vehicle cells with full plate
   const plateEl = document.getElementById('plate');
   if (plateEl) {
-    const onPlate = () => { applyPlateToRows(); saveDraft(); };
+    const onPlate = () => {
+      applyPlateToRows();
+      saveDraft();
+    };
     plateEl.addEventListener('input', onPlate);
     plateEl.addEventListener('change', onPlate);
-  });
+  }
+
+);
   }
 
   if (addRowBtn) {
