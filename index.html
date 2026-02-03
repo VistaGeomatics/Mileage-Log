@@ -130,6 +130,7 @@
 
     input[type="text"],
     input[type="date"],
+    select,
     textarea {
       width: 100%;
       padding: 7px 9px;
@@ -412,8 +413,24 @@
             <input type="text" id="city" name="city">
           </div>
           <div>
+
             <label for="province">Province</label>
-            <input type="text" id="province" name="province">
+            <select id="province" name="province">
+              <option value="AB" selected>Alberta</option>
+              <option value="BC">British Columbia</option>
+              <option value="MB">Manitoba</option>
+              <option value="NB">New Brunswick</option>
+              <option value="NL">Newfoundland and Labrador</option>
+              <option value="NS">Nova Scotia</option>
+              <option value="NT">Northwest Territories</option>
+              <option value="NU">Nunavut</option>
+              <option value="ON">Ontario</option>
+              <option value="PE">Prince Edward Island</option>
+              <option value="QC">Quebec</option>
+              <option value="SK">Saskatchewan</option>
+              <option value="YT">Yukon</option>
+            </select>
+
           </div>
           <div>
             <label for="postal_code">Postal Code</label>
@@ -576,7 +593,7 @@
   function buildVehicleLabel() {
     const plateEl = document.getElementById('plate');
     const plate = plateEl ? plateEl.value : '';
-    return (plate || '').trim(); // full plate
+    return (plate || '').trim();   // full plate, no substring
   }
 
   function createLogRow(values) {
@@ -721,8 +738,6 @@
   }
 
   // *** FIXED FUNCTION: ensures full plate & upgrades old 1-character values ***
-  
-  // *** Plate autofill — FULL plate into Vehicle cells (also upgrades old 1-character saves) ***
   function applyPlateToRows() {
     const label = buildVehicleLabel();
     if (!label) return;
@@ -733,7 +748,6 @@
       if (!vehicleInput) return;
 
       const current = (vehicleInput.value || '').trim();
-
       if (!current) {
         vehicleInput.value = label;
         return;
@@ -743,8 +757,7 @@
         vehicleInput.value = label;
       }
     });
-  }
-else if (current.length === 1 && label.startsWith(current)) {
+  }else if (current.length === 1 && label.startsWith(current)) {
         // Old saved value with only first character → upgrade to full plate
         vehicleInput.value = label;
       }
@@ -754,10 +767,10 @@ else if (current.length === 1 && label.startsWith(current)) {
   // Plate change – fill / upgrade vehicle cells with full plate
   const plateEl = document.getElementById('plate');
   if (plateEl) {
-    plateEl.addEventListener('input', () => {
-      applyPlateToRows();
-      saveDraft();
-    });
+    const onPlate = () => { applyPlateToRows(); saveDraft(); };
+    plateEl.addEventListener('input', onPlate);
+    plateEl.addEventListener('change', onPlate);
+  });
   }
 
   if (addRowBtn) {
@@ -775,7 +788,6 @@ else if (current.length === 1 && label.startsWith(current)) {
   const odoPhotoInput   = document.getElementById('odoPhotoInput');
   const odoPhotoPreview = document.getElementById('odoPhotoPreview');
 
-  
   function renderOdoPreview(list) {
     if (!odoPhotoPreview) return;
     odoPhotoPreview.innerHTML = '';
@@ -786,8 +798,7 @@ else if (current.length === 1 && label.startsWith(current)) {
       img.alt = 'Odometer Photo';
       odoPhotoPreview.appendChild(img);
     });
-  }
-}
+  }}
 
   if (odoPhotoBtn && odoPhotoInput) {
     odoPhotoBtn.addEventListener('click', () => odoPhotoInput.click());
@@ -796,7 +807,7 @@ else if (current.length === 1 && label.startsWith(current)) {
       if (!file || !file.type.startsWith('image/')) return;
       const reader = new FileReader();
       reader.onload = e => {
-        const uploaded = new Date().toISOString().slice(0,10);
+        const uploaded = new Date().toISOString().slice(0, 10);
         odometerPhotos.push({ dataUrl: e.target.result, uploaded });
         renderOdoPreview(odometerPhotos);
         saveDraft();
@@ -860,9 +871,14 @@ else if (current.length === 1 && label.startsWith(current)) {
         });
       }
 
-      if (data.single && Array.isArray(data.single.odometer_photos)) {
-        odometerPhotos = data.single.odometer_photos;
-        renderOdoPreview(odometerPhotos);
+      if (data.single) {
+        if (Array.isArray(data.single.odometer_photos)) {
+          odometerPhotos = data.single.odometer_photos;
+          renderOdoPreview(odometerPhotos);
+        } else if (data.single.odometer_photo) {
+          odometerPhotos = [{ dataUrl: data.single.odometer_photo, uploaded: 'unknown' }];
+          renderOdoPreview(odometerPhotos);
+        }
       }if (data.checks) {
         const matchBox = document.getElementById('od_confirm_match');
         const maintBox = document.getElementById('od_confirm_maintenance');
@@ -903,7 +919,8 @@ else if (current.length === 1 && label.startsWith(current)) {
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
       localStorage.removeItem(STORAGE_KEY);
-      odometerPhotos = []; renderOdoPreview(odometerPhotos);
+      odometerPhotos = [];
+      renderOdoPreview(odometerPhotos);
       setTimeout(() => {
         logBody.innerHTML = '';
         ensureInitialRows();
@@ -919,7 +936,6 @@ else if (current.length === 1 && label.startsWith(current)) {
   const logContainer  = document.getElementById('logContainer');
   const buttonRow     = document.getElementById('buttonRow');
 
-  
   function sanitizeForFilename(str) {
     return String(str || '')
       .replace(/[\\/:*?"<>|]+/g, ' ')
@@ -932,13 +948,11 @@ else if (current.length === 1 && label.startsWith(current)) {
     const driver = sanitizeForFilename(document.getElementById('driver_name')?.value || 'Driver');
     const plate  = sanitizeForFilename(document.getElementById('plate')?.value || 'Plate');
     return `${yyyy_mm_dd} - ${driver} - ${plate}.pdf`;
-  }
-const user = prompt('Enter file name (without extension):', base);
+  }const user = prompt('Enter file name (without extension):', base);
     const finalBase = (user && user.trim()) ? user.trim() : base;
     return finalBase + '.pdf';
   }
 
-  
   async function generatePdf() {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'letter');
@@ -947,7 +961,6 @@ const user = prompt('Enter file name (without extension):', base);
     buttonRow.style.display = 'none';
 
     try {
-      // Page 1: the form (unchanged)
       const canvas = await html2canvas(logContainer, {
         scale: 2,
         useCORS: true,
@@ -973,7 +986,6 @@ const user = prompt('Enter file name (without extension):', base);
 
       pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
 
-      // Additional pages: large odometer photos (4 per page) with upload date labels
       const photos = Array.isArray(odometerPhotos) ? odometerPhotos : [];
       if (photos.length > 0) {
         const pageW = pdf.internal.pageSize.getWidth();
@@ -983,15 +995,15 @@ const user = prompt('Enter file name (without extension):', base);
         const outerPadY = 12;
         const gutterX = 8;
         const gutterY = 12;
-        const labelH = 8;
+        const labelH = 10;
 
         const cellW = (pageW - outerPadX*2 - gutterX) / 2;
         const cellH = (pageH - outerPadY*2 - gutterY) / 2;
 
         for (let i = 0; i < photos.length; i += 4) {
           pdf.addPage();
-
           const slice = photos.slice(i, i + 4);
+
           slice.forEach((p, idx) => {
             const col = idx % 2;
             const row = Math.floor(idx / 2);
@@ -999,16 +1011,14 @@ const user = prompt('Enter file name (without extension):', base);
             const x0 = outerPadX + col * (cellW + gutterX);
             const y0 = outerPadY + row * (cellH + gutterY);
 
-            const imgX = x0;
-            const imgY = y0;
             const imgW = cellW;
             const imgH = cellH - labelH;
 
             if (p && p.dataUrl) {
-              pdf.addImage(p.dataUrl, 'JPEG', imgX, imgY, imgW, imgH, undefined, 'FAST');
+              pdf.addImage(p.dataUrl, 'JPEG', x0, y0, imgW, imgH, undefined, 'FAST');
               const uploaded = (p.uploaded || '').trim() || 'unknown';
               pdf.setFontSize(10);
-              pdf.text(`Uploaded: ${uploaded}`, imgX, imgY + imgH + 6);
+              pdf.text(`Uploaded: ${uploaded}`, x0, y0 + imgH + 7);
             }
           });
         }
@@ -1018,8 +1028,7 @@ const user = prompt('Enter file name (without extension):', base);
     } finally {
       buttonRow.style.display = originalDisplay || 'flex';
     }
-  }
-= window.jspdf;
+  }= window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'letter');
 
     const originalDisplay = buttonRow.style.display;
