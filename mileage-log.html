@@ -375,6 +375,56 @@
         font-size: 0.7rem;
       }
     }
+      /* Multi-photo gallery */
+    .photo-gallery {
+      margin-top: 8px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .photo-card {
+      border: 1px solid var(--border-soft);
+      background: #fff;
+      border-radius: 12px;
+      padding: 8px;
+      box-shadow: 0 6px 16px rgba(5, 41, 66, 0.06);
+    }
+    .photo-card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid var(--border-soft);
+      background: #e5ecf7;
+    }
+    .photo-card .photo-note {
+      margin-top: 6px;
+    }
+    .photo-card textarea {
+      min-height: 52px;
+      font-size: 0.76rem;
+      padding: 6px 8px;
+    }
+    .photo-card .photo-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .mini-btn {
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid #d4d7dd;
+      background: #f3f4f6;
+      cursor: pointer;
+    }
+    .mini-btn:hover { transform: translateY(-1px); }
+
   </style>
 </head>
 <body>
@@ -523,6 +573,24 @@
         </div>
       </div>
 
+      
+      <!-- Supporting Photos (optional) -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">Supporting Photos</div>
+          <div class="section-note">Optional, add any supporting photos, each will export larger, 4 per page with notes below.</div>
+        </div>
+
+        <div class="photo-actions">
+          <button type="button" class="btn-secondary" id="supportPhotosBtn">+ Add Photos</button>
+          <input type="file" id="supportPhotosInput" accept="image/*" multiple style="display:none;">
+          <span class="section-note">You can select multiple photos at once.</span>
+        </div>
+
+        <div class="photo-gallery" id="supportPhotosGallery"></div>
+      </div>
+
+
       <!-- Totals & Notes -->
       <div class="section-card">
         <div class="section-header">
@@ -570,6 +638,7 @@
   const form      = document.getElementById('mileageForm');
 
   let odometerPhotoData = '';
+  let supportPhotos = []; // { id, dataUrl, note }
 
   // ---------- helpers ----------
 
@@ -793,7 +862,94 @@
     });
   }
 
-  // ---------- LOCAL STORAGE ----------
+  
+  // ---------- SUPPORTING PHOTOS (MULTI) ----------
+  const supportPhotosBtn     = document.getElementById('supportPhotosBtn');
+  const supportPhotosInput   = document.getElementById('supportPhotosInput');
+  const supportPhotosGallery = document.getElementById('supportPhotosGallery');
+
+  function uid() {
+    return Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
+
+  function renderSupportGallery() {
+    if (!supportPhotosGallery) return;
+    supportPhotosGallery.innerHTML = '';
+
+    if (!Array.isArray(supportPhotos) || supportPhotos.length === 0) return;
+
+    supportPhotos.forEach((p, index) => {
+      const card = document.createElement('div');
+      card.className = 'photo-card';
+
+      card.innerHTML = `
+        <div class="photo-card-top">
+          <div class="section-note">Photo ${index + 1}</div>
+          <button type="button" class="mini-btn" data-remove="${p.id}">Remove</button>
+        </div>
+        <img src="${p.dataUrl}" alt="Supporting Photo ${index + 1}">
+        <div class="photo-note">
+          <label style="margin:6px 0 4px;">Notes</label>
+          <textarea class="photo-note-input" data-note="${p.id}" placeholder="Add notes for this photo (will print under the image).">${p.note || ''}</textarea>
+        </div>
+      `;
+
+      supportPhotosGallery.appendChild(card);
+    });
+
+    // Bind remove + note events
+    supportPhotosGallery.querySelectorAll('button[data-remove]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-remove');
+        supportPhotos = supportPhotos.filter(x => x.id !== id);
+        renderSupportGallery();
+        saveDraft();
+      });
+    });
+
+    supportPhotosGallery.querySelectorAll('textarea[data-note]').forEach(ta => {
+      ta.addEventListener('input', () => {
+        const id = ta.getAttribute('data-note');
+        const item = supportPhotos.find(x => x.id === id);
+        if (item) item.note = ta.value || '';
+        saveDraft();
+      });
+    });
+  }
+
+  if (supportPhotosBtn && supportPhotosInput) {
+    supportPhotosBtn.addEventListener('click', () => supportPhotosInput.click());
+    supportPhotosInput.addEventListener('change', () => {
+      const files = supportPhotosInput.files ? Array.from(supportPhotosInput.files) : [];
+      if (!files.length) return;
+
+      const imageFiles = files.filter(f => f && f.type && f.type.startsWith('image/'));
+      if (!imageFiles.length) return;
+
+      let remaining = imageFiles.length;
+      imageFiles.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          supportPhotos.push({
+            id: uid(),
+            dataUrl: e.target.result,
+            note: ''
+          });
+          remaining -= 1;
+          if (remaining <= 0) {
+            renderSupportGallery();
+            saveDraft();
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+
+      supportPhotosInput.value = '';
+    });
+  }
+
+
+// ---------- LOCAL STORAGE ----------
   function saveDraft() {
     try {
       const data = { single: {}, rows: [], checks: {} };
@@ -811,6 +967,8 @@
       });
 
       data.single.odometer_photo = odometerPhotoData || '';
+
+      data.single.support_photos = Array.isArray(supportPhotos) ? supportPhotos : [];
 
       data.checks.od_confirm_match = document.getElementById('od_confirm_match')?.checked || false;
       data.checks.od_confirm_maintenance = document.getElementById('od_confirm_maintenance')?.checked || false;
@@ -834,6 +992,7 @@
       ensureInitialRows();
       applyPlateToRows();
       updateTotals();
+      renderSupportGallery();
       return;
     }
     try {
@@ -851,6 +1010,10 @@
         odometerPhotoData = data.single.odometer_photo;
         renderOdoPreview(odometerPhotoData);
       }
+
+      // supporting photos
+      supportPhotos = Array.isArray(data.single?.support_photos) ? data.single.support_photos : [];
+      renderSupportGallery();
 
       if (data.checks) {
         const matchBox = document.getElementById('od_confirm_match');
@@ -872,12 +1035,14 @@
       // Make sure old 1-character values are upgraded after load
       applyPlateToRows();
       updateTotals();
+      renderSupportGallery();
     } catch (e) {
       console.warn('Unable to load draft', e);
       logBody.innerHTML = '';
       ensureInitialRows();
       applyPlateToRows();
       updateTotals();
+      renderSupportGallery();
     }
   }
 
@@ -893,7 +1058,9 @@
     resetBtn.addEventListener('click', () => {
       localStorage.removeItem(STORAGE_KEY);
       odometerPhotoData = '';
+      supportPhotos = [];
       renderOdoPreview('');
+      renderSupportGallery();
       setTimeout(() => {
         logBody.innerHTML = '';
         ensureInitialRows();
@@ -909,15 +1076,95 @@
   const logContainer  = document.getElementById('logContainer');
   const buttonRow     = document.getElementById('buttonRow');
 
+    function safePart(s) {
+    return String(s || '')
+      .trim()
+      .replace(/[^\w\s()-]/g, '')     // strip weird characters
+      .replace(/\s+/g, '_')
+      .slice(0, 40);
+  }
+
+  function todayStamp() {
+    // local date in YYYY-MM-DD (en-CA)
+    return new Date().toLocaleDateString('en-CA');
+  }
+
   function getFilename() {
-    const period = (document.getElementById('log_period')?.value || '').trim();
-    let base = 'MileageLog';
-    if (period) {
-      base += '-' + period.replace(/\s+/g, '_');
+    const date  = todayStamp();
+    const name  = safePart(document.getElementById('driver_name')?.value || 'Driver');
+    const plate = safePart(document.getElementById('plate')?.value || 'Plate');
+
+    return `${date} - ${name} - ${plate}.pdf`;
+  }
+
+  async function addSupportPhotoPages(pdf) {
+    if (!Array.isArray(supportPhotos) || supportPhotos.length === 0) return;
+
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+
+    const margin = 10;
+    const gap = 6;
+
+    const cols = 2;
+    const rows = 2;
+    const cellW = (pageW - margin * 2 - gap) / cols;
+    const cellH = (pageH - margin * 2 - gap) / rows;
+
+    const captionH = 12;  // space for notes
+    const imgBoxH = cellH - captionH;
+
+    let i = 0;
+    while (i < supportPhotos.length) {
+      pdf.addPage();
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (i >= supportPhotos.length) break;
+
+          const p = supportPhotos[i];
+          const x = margin + c * (cellW + gap);
+          const y = margin + r * (cellH + gap);
+
+          // Fit image into box
+          try {
+            const props = pdf.getImageProperties(p.dataUrl);
+            const imgW = props.width;
+            const imgH = props.height;
+            const scale = Math.min(cellW / imgW, imgBoxH / imgH);
+
+            const drawW = imgW * scale;
+            const drawH = imgH * scale;
+
+            const imgX = x + (cellW - drawW) / 2;
+            const imgY = y + (imgBoxH - drawH) / 2;
+
+            const fmt = (props.fileType || '').toUpperCase() || 'JPEG';
+            pdf.addImage(p.dataUrl, fmt, imgX, imgY, drawW, drawH);
+          } catch (e) {
+            // If jsPDF can't parse the image for some reason, skip it gracefully.
+          }
+
+          // Notes under image
+          const note = String(p.note || '').trim();
+          const noteY = y + imgBoxH + 4;
+          pdf.setFontSize(9);
+          if (note) {
+            const lines = pdf.splitTextToSize(note, cellW);
+            pdf.text(lines.slice(0, 3), x, noteY); // keep it tidy (up to ~3 lines)
+          }
+
+          // small counter
+          pdf.setFontSize(8);
+          pdf.text(`Photo ${i + 1}`, x, y - 2);
+
+          i += 1;
+        }
+      }
     }
-    const user = prompt('Enter file name (without extension):', base);
-    const finalBase = (user && user.trim()) ? user.trim() : base;
-    return finalBase + '.pdf';
+  }
+
+-${name}-${plate}.pdf`;
   }
 
   async function generatePdf() {
@@ -953,6 +1200,7 @@
 
       pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
 
+      await addSupportPhotoPages(pdf);
       return pdf;
     } finally {
       buttonRow.style.display = originalDisplay || 'flex';
@@ -991,5 +1239,41 @@
     });
   }
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const plateInput = document.getElementById("plate");
+  const tableBody = document.getElementById("logBody");
+  const addRowBtn = document.getElementById("addRowBtn");
+
+  function createRow() {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><input type="date"></td>
+      <td><input type="text" class="vehicle-cell"></td>
+      <td><input type="text"></td>
+      <td><input type="number" step="0.1"></td>
+      <td><input type="number" step="0.1"></td>
+      <td><input type="text"></td>
+    `;
+    tableBody.appendChild(tr);
+    autofillVehicles();
+  }
+
+  function autofillVehicles() {
+    const value = plateInput.value || "";
+    document.querySelectorAll(".vehicle-cell").forEach(cell => {
+      if (!cell.value) cell.value = value;
+    });
+  }
+
+  // Initial 8 rows
+  for (let i = 0; i < 8; i++) createRow();
+
+  plateInput.addEventListener("input", autofillVehicles);
+  addRowBtn.addEventListener("click", createRow);
+});
+</script>
+
 </body>
 </html>
