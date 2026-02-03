@@ -569,7 +569,7 @@
       </div>
 
       <div class="version-tag">
-        Mileage Log v2.3.1
+        Mileage Log v2.3.2
       </div>
     </form>
   </div>
@@ -586,7 +586,7 @@
   const addRowBtn = document.getElementById('addRowBtn');
   const form      = document.getElementById('mileageForm');
 
-  let odometerPhotos = []; // { dataUrl, uploaded }
+  let odometerPhotoData = '';
 
   // ---------- helpers ----------
 
@@ -748,16 +748,11 @@
       if (!vehicleInput) return;
 
       const current = (vehicleInput.value || '').trim();
-      if (!current) {
-        vehicleInput.value = label;
-        return;
-      }
 
-      if (current.length < label.length && label.toUpperCase().startsWith(current.toUpperCase())) {
+      if (!current) {
+        // Empty cell → fill with full plate
         vehicleInput.value = label;
-      }
-    });
-  }else if (current.length === 1 && label.startsWith(current)) {
+      } else if (current.length === 1 && label.startsWith(current)) {
         // Old saved value with only first character → upgrade to full plate
         vehicleInput.value = label;
       }
@@ -767,15 +762,10 @@
   // Plate change – fill / upgrade vehicle cells with full plate
   const plateEl = document.getElementById('plate');
   if (plateEl) {
-    const onPlate = () => {
+    plateEl.addEventListener('input', () => {
       applyPlateToRows();
       saveDraft();
-    };
-    plateEl.addEventListener('input', onPlate);
-    plateEl.addEventListener('change', onPlate);
-  }
-
-);
+    });
   }
 
   if (addRowBtn) {
@@ -793,17 +783,16 @@
   const odoPhotoInput   = document.getElementById('odoPhotoInput');
   const odoPhotoPreview = document.getElementById('odoPhotoPreview');
 
-  function renderOdoPreview(list) {
+  function renderOdoPreview(dataUrl) {
     if (!odoPhotoPreview) return;
     odoPhotoPreview.innerHTML = '';
-    (list || []).forEach(item => {
-      if (!item || !item.dataUrl) return;
+    if (dataUrl) {
       const img = document.createElement('img');
-      img.src = item.dataUrl;
+      img.src = dataUrl;
       img.alt = 'Odometer Photo';
       odoPhotoPreview.appendChild(img);
-    });
-  }}
+    }
+  }
 
   if (odoPhotoBtn && odoPhotoInput) {
     odoPhotoBtn.addEventListener('click', () => odoPhotoInput.click());
@@ -812,15 +801,14 @@
       if (!file || !file.type.startsWith('image/')) return;
       const reader = new FileReader();
       reader.onload = e => {
-        const uploaded = new Date().toISOString().slice(0, 10);
-        odometerPhotos.push({ dataUrl: e.target.result, uploaded });
-        renderOdoPreview(odometerPhotos);
+        odometerPhotoData = e.target.result;
+        renderOdoPreview(odometerPhotoData);
         saveDraft();
       };
       reader.readAsDataURL(file);
       odoPhotoInput.value = '';
     });
-}
+  }
 
   // ---------- LOCAL STORAGE ----------
   function saveDraft() {
@@ -839,7 +827,7 @@
         if (el) data.single[id] = el.value || '';
       });
 
-      data.single.odometer_photos = Array.isArray(odometerPhotos) ? odometerPhotos : [];
+      data.single.odometer_photo = odometerPhotoData || '';
 
       data.checks.od_confirm_match = document.getElementById('od_confirm_match')?.checked || false;
       data.checks.od_confirm_maintenance = document.getElementById('od_confirm_maintenance')?.checked || false;
@@ -876,15 +864,12 @@
         });
       }
 
-      if (data.single) {
-        if (Array.isArray(data.single.odometer_photos)) {
-          odometerPhotos = data.single.odometer_photos;
-          renderOdoPreview(odometerPhotos);
-        } else if (data.single.odometer_photo) {
-          odometerPhotos = [{ dataUrl: data.single.odometer_photo, uploaded: 'unknown' }];
-          renderOdoPreview(odometerPhotos);
-        }
-      }if (data.checks) {
+      if (data.single && data.single.odometer_photo) {
+        odometerPhotoData = data.single.odometer_photo;
+        renderOdoPreview(odometerPhotoData);
+      }
+
+      if (data.checks) {
         const matchBox = document.getElementById('od_confirm_match');
         const maintBox = document.getElementById('od_confirm_maintenance');
         if (matchBox) matchBox.checked = !!data.checks.od_confirm_match;
@@ -924,8 +909,8 @@
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
       localStorage.removeItem(STORAGE_KEY);
-      odometerPhotos = [];
-      renderOdoPreview(odometerPhotos);
+      odometerPhotoData = '';
+      renderOdoPreview('');
       setTimeout(() => {
         logBody.innerHTML = '';
         ensureInitialRows();
@@ -941,19 +926,13 @@
   const logContainer  = document.getElementById('logContainer');
   const buttonRow     = document.getElementById('buttonRow');
 
-  function sanitizeForFilename(str) {
-    return String(str || '')
-      .replace(/[\\/:*?"<>|]+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-  }
-
-  function getFilenameAuto() {
-    const yyyy_mm_dd = new Date().toISOString().slice(0, 10);
-    const driver = sanitizeForFilename(document.getElementById('driver_name')?.value || 'Driver');
-    const plate  = sanitizeForFilename(document.getElementById('plate')?.value || 'Plate');
-    return `${yyyy_mm_dd} - ${driver} - ${plate}.pdf`;
-  }const user = prompt('Enter file name (without extension):', base);
+  function getFilename() {
+    const period = (document.getElementById('log_period')?.value || '').trim();
+    let base = 'MileageLog';
+    if (period) {
+      base += '-' + period.replace(/\s+/g, '_');
+    }
+    const user = prompt('Enter file name (without extension):', base);
     const finalBase = (user && user.trim()) ? user.trim() : base;
     return finalBase + '.pdf';
   }
@@ -991,6 +970,219 @@
 
       pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
 
+      return pdf;
+    } finally {
+      buttonRow.style.display = originalDisplay || 'flex';
+    }
+  }
+
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', async () => {
+      const filename = getFilename();
+      const pdf = await generatePdf();
+      pdf.save(filename);
+    });
+  }
+
+  // ---------- SUBMIT (email to timesheets@vistageomatics.com) ----------
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const filename = getFilename();
+      const pdf = await generatePdf();
+      pdf.save(filename);
+
+      const period = (document.getElementById('log_period')?.value || '').trim();
+      const subject = 'Mileage Log - ' + filename;
+      const bodyLines = [
+        'Please find my mileage log attached.',
+        '',
+        period ? 'Period: ' + period : '',
+        '',
+        'Sent from the Vista Geomatics mileage log form.'
+      ].join('%0D%0A'); // URL-encoded newlines
+
+      // Open the user's email client with recipient pre-filled
+      window.location.href = 'mailto:timesheets@vistageomatics.com'
+        + '?subject=' + encodeURIComponent(subject)
+        + '&body=' + bodyLines;
+    });
+  }
+</script>
+
+<script>
+/* =========================
+   v2.3.2 PATCH (GitHub-safe)
+   - Keeps original JS intact
+   - Adds: filename format, photo pages (4/page) with upload date, plate autofill full, photo persistence
+   ========================= */
+(function () {
+  // ---------- Helpers ----------
+  function sanitizeForFilename(str) {
+    return String(str || '')
+      .replace(/[\\\/:*?"<>|]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // Override/define getFilename so existing click handlers use it (no prompts)
+  window.getFilename = function () {
+    const yyyy_mm_dd = new Date().toISOString().slice(0, 10);
+    const driver = sanitizeForFilename(document.getElementById('driver_name')?.value || 'Driver');
+    const plate  = sanitizeForFilename(document.getElementById('plate')?.value || 'Plate');
+    return `${yyyy_mm_dd} - ${driver} - ${plate}.pdf`;
+  };
+
+  // ---------- Plate autofill (full value) ----------
+  function buildVehicleLabelFull() {
+    return (document.getElementById('plate')?.value || '').trim();
+  }
+
+  function applyPlateToRowsFull() {
+    const label = buildVehicleLabelFull();
+    if (!label) return;
+    const logBody = document.getElementById('logBody');
+    if (!logBody) return;
+
+    logBody.querySelectorAll('tr').forEach(row => {
+      const vehicleInput = row.querySelector('input[name="vehicle[]"]');
+      if (!vehicleInput) return;
+      const current = (vehicleInput.value || '').trim();
+      if (!current) {
+        vehicleInput.value = label;
+        return;
+      }
+      // Upgrade old bugged value (e.g., first character only) when it matches prefix
+      if (current.length < label.length && label.toUpperCase().startsWith(current.toUpperCase())) {
+        vehicleInput.value = label;
+      }
+    });
+  }
+
+  const plateEl = document.getElementById('plate');
+  if (plateEl) {
+    const onPlate = () => { applyPlateToRowsFull(); };
+    plateEl.addEventListener('input', onPlate);
+    plateEl.addEventListener('change', onPlate);
+  }
+
+  // Also run once on load (helps existing saved drafts)
+  applyPlateToRowsFull();
+
+  // ---------- Odometer photo tracking (multiple) ----------
+  // We keep original odometer preview behavior, but store multiple photos + upload date separately.
+  const PHOTOS_KEY = 'vistaMileage_odometerPhotos_v232';
+  let odometerPhotos = [];
+
+  function loadPhotos() {
+    try {
+      const raw = localStorage.getItem(PHOTOS_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      odometerPhotos = Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      odometerPhotos = [];
+    }
+  }
+
+  function savePhotos() {
+    try { localStorage.setItem(PHOTOS_KEY, JSON.stringify(odometerPhotos)); } catch (e) {}
+  }
+
+  function clearPhotos() {
+    odometerPhotos = [];
+    savePhotos();
+  }
+
+  loadPhotos();
+
+  // Rebuild thumbnail strip to match original look (it appends <img> tags into #odoPhotoPreview)
+  const odoPhotoPreview = document.getElementById('odoPhotoPreview');
+  function renderThumbs() {
+    if (!odoPhotoPreview) return;
+    odoPhotoPreview.innerHTML = '';
+    odometerPhotos.forEach(p => {
+      if (!p || !p.dataUrl) return;
+      const img = document.createElement('img');
+      img.src = p.dataUrl;
+      img.alt = 'Odometer Photo';
+      odoPhotoPreview.appendChild(img);
+    });
+  }
+  renderThumbs();
+
+  // Intercept odometer photo input and store upload date + dataUrl
+  const odoPhotoInput = document.getElementById('odoPhotoInput');
+  if (odoPhotoInput) {
+    odoPhotoInput.addEventListener('change', (ev) => {
+      const file = odoPhotoInput.files && odoPhotoInput.files[0];
+      if (!file || !file.type.startsWith('image/')) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const uploaded = new Date().toISOString().slice(0, 10);
+        odometerPhotos.push({ dataUrl: e.target.result, uploaded });
+        savePhotos();
+        renderThumbs();
+
+        // Keep original single-photo var in sync if it exists (so any original logic won’t break)
+        if (typeof window.odometerPhotoData !== 'undefined') {
+          window.odometerPhotoData = e.target.result;
+        }
+      };
+      reader.readAsDataURL(file);
+
+      // allow multiple uploads
+      odoPhotoInput.value = '';
+    }, true);
+  }
+
+  // Hook reset to also clear photo storage (reset already clears the form visually)
+  const resetBtn = document.getElementById('resetBtn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      clearPhotos();
+      renderThumbs();
+    }, true);
+  }
+
+  // ---------- PDF generation patch: add photo pages (4 per page) with upload date labels ----------
+  // Override generatePdf so existing download/share buttons use it
+  window.generatePdf = async function () {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'letter');
+
+    const logContainer = document.getElementById('logContainer');
+    const buttonRow = document.getElementById('buttonRow');
+    const originalDisplay = buttonRow ? buttonRow.style.display : '';
+
+    if (buttonRow) buttonRow.style.display = 'none';
+
+    try {
+      const canvas = await html2canvas(logContainer, {
+        scale: 2,
+        useCORS: true,
+        scrollY: -window.scrollY
+      });
+
+      const imgData    = canvas.toDataURL('image/jpeg', 0.95);
+      const pdfWidth   = pdf.internal.pageSize.getWidth();
+      const pdfHeight  = pdf.internal.pageSize.getHeight();
+      const margin     = 6;
+      const maxWidth   = pdfWidth  - margin * 2;
+      const maxHeight  = pdfHeight - margin * 2;
+
+      let imgWidth  = canvas.width;
+      let imgHeight = canvas.height;
+      const scale   = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
+
+      imgWidth  *= scale;
+      imgHeight *= scale;
+
+      const x = margin + (maxWidth - imgWidth) / 2;
+      const y = margin;
+
+      pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+
+      // Photo pages
       const photos = Array.isArray(odometerPhotos) ? odometerPhotos : [];
       if (photos.length > 0) {
         const pageW = pdf.internal.pageSize.getWidth();
@@ -1031,77 +1223,28 @@
 
       return pdf;
     } finally {
-      buttonRow.style.display = originalDisplay || 'flex';
+      if (buttonRow) buttonRow.style.display = originalDisplay || 'flex';
     }
-  }= window.jspdf;
-    const pdf = new jsPDF('p', 'mm', 'letter');
+  };
 
-    const originalDisplay = buttonRow.style.display;
-    buttonRow.style.display = 'none';
-
-    try {
-      const canvas = await html2canvas(logContainer, {
-        scale: 2,
-        useCORS: true,
-        scrollY: -window.scrollY
-      });
-
-      const imgData    = canvas.toDataURL('image/jpeg', 0.95);
-      const pdfWidth   = pdf.internal.pageSize.getWidth();
-      const pdfHeight  = pdf.internal.pageSize.getHeight();
-      const margin     = 6;
-      const maxWidth   = pdfWidth  - margin * 2;
-      const maxHeight  = pdfHeight - margin * 2;
-
-      let imgWidth  = canvas.width;
-      let imgHeight = canvas.height;
-      const scale   = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
-
-      imgWidth  *= scale;
-      imgHeight *= scale;
-
-      const x = margin + (maxWidth  - imgWidth)  / 2;
-      const y = margin;
-
-      pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
-
-      return pdf;
-    } finally {
-      buttonRow.style.display = originalDisplay || 'flex';
+  // ---------- Ensure 8 starting rows ----------
+  // Original file already does this; but if draft has 0 rows for some reason, enforce 8 once.
+  try {
+    const logBody = document.getElementById('logBody');
+    if (logBody && logBody.children.length === 0) {
+      // try original ensureInitialRows if exists
+      if (typeof window.ensureInitialRows === 'function') {
+        window.ensureInitialRows();
+      }
+      // still empty? add 8 using original createLogRow if available
+      if (logBody.children.length === 0 && typeof window.createLogRow === 'function') {
+        for (let i = 0; i < 8; i++) window.createLogRow();
+      }
     }
-  }
+  } catch(e) {}
 
-  if (downloadBtn) {
-    downloadBtn.addEventListener('click', async () => {
-      const filename = getFilenameAuto();
-      const pdf = await generatePdf();
-      pdf.save(filename);
-    });
-  }
-
-  // ---------- SUBMIT (email to timesheets@vistageomatics.com) ----------
-  if (shareBtn) {
-    shareBtn.addEventListener('click', async () => {
-      const filename = getFilenameAuto();
-      const pdf = await generatePdf();
-      pdf.save(filename);
-
-      const period = (document.getElementById('log_period')?.value || '').trim();
-      const subject = 'Mileage Log - ' + filename;
-      const bodyLines = [
-        'Please find my mileage log attached.',
-        '',
-        period ? 'Period: ' + period : '',
-        '',
-        'Sent from the Vista Geomatics mileage log form.'
-      ].join('%0D%0A'); // URL-encoded newlines
-
-      // Open the user's email client with recipient pre-filled
-      window.location.href = 'mailto:timesheets@vistageomatics.com'
-        + '?subject=' + encodeURIComponent(subject)
-        + '&body=' + bodyLines;
-    });
-  }
+})();
 </script>
+
 </body>
 </html>
