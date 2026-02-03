@@ -1,233 +1,1093 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Mileage Log v2.5</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background: #f4f6f8;
-  margin: 0;
-  padding: 20px;
-}
-h1 {
-  margin-top: 0;
-}
-.card {
-  background: #fff;
-  padding: 16px;
-  border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(0,0,0,.08);
-  margin-bottom: 20px;
-}
-label {
-  display: block;
-  font-weight: 600;
-  margin-top: 10px;
-}
-input, textarea, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 6px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 12px;
-}
-th, td {
-  border: 1px solid #ddd;
-  padding: 8px;
-}
-th {
-  background: #f0f2f5;
-}
-button {
-  background: #1f6feb;
-  color: white;
-  border: none;
-  cursor: pointer;
-  margin-top: 12px;
-}
-button.secondary {
-  background: #6c757d;
-}
-.row-actions {
-  display: flex;
-  gap: 10px;
-}
-.photo-preview {
-  max-width: 100%;
-  margin-top: 10px;
-  border-radius: 8px;
-}
-.footer {
-  font-size: 12px;
-  color: #666;
-  margin-top: 20px;
-}
-</style>
+  <meta charset="UTF-8" />
+  <title>VistaGeomatics – Mileage Log</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --vista-blue: #165f7d;
+      --vista-blue-light: #2a7fa3;
+      --vista-blue-dark: #0b3045;
+      --bg-body: #eef3f9;
+      --bg-card: #ffffff;
+      --border-soft: #d6e2f0;
+      --text-main: #101827;
+      --text-muted: #6b7280;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: "Inter", sans-serif;
+      background: radial-gradient(circle at top, #f4f8fc 0, #e4edf6 40%, #dde6f3 100%);
+      color: var(--text-main);
+    }
+
+    .page-wrap {
+      max-width: 940px;
+      margin: 0 auto;
+    }
+
+    .container {
+      background: var(--bg-card);
+      border-radius: 16px;
+      box-shadow: 0 14px 30px rgba(5, 41, 66, 0.18), 0 0 0 1px rgba(5, 41, 66, 0.04);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .container::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at top right, rgba(22,95,125,0.16), transparent 55%);
+      opacity: 0.9;
+    }
+
+    /* HEADER BAR */
+    .header-bar {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: linear-gradient(120deg, var(--vista-blue-light) 0%, var(--vista-blue) 40%, var(--vista-blue-dark) 100%);
+      color: #fff;
+    }
+
+    .header-left h1 {
+      margin: 0;
+      font-family: "Montserrat", sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .header-left p {
+      margin: 2px 0 0;
+      font-size: 0.8rem;
+      opacity: 0.9;
+    }
+
+    .header-logo {
+      height: 60px;
+      filter: drop-shadow(0 5px 14px rgba(0,0,0,0.35));
+    }
+
+    /* PAGE TITLE */
+    .page-title-bar {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 12px 20px 8px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.78), #f7faff);
+    }
+
+    .page-title-main {
+      font-family: "Montserrat", sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--vista-blue-dark);
+    }
+
+    .page-title-sub {
+      margin-top: 3px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .page-title-accent {
+      width: 120px;
+      height: 3px;
+      margin: 8px auto 0;
+      border-radius: 999px;
+      background: linear-gradient(120deg, var(--vista-blue-light), var(--vista-blue), var(--vista-blue-dark));
+      box-shadow: 0 0 8px rgba(46,167,224,0.65);
+    }
+
+    form {
+      position: relative;
+      z-index: 1;
+      padding: 10px 18px 18px;
+      font-size: 0.86rem;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text-main);
+    }
+
+    input[type="text"],
+    input[type="date"],
+    textarea {
+      width: 100%;
+      padding: 7px 9px;
+      border-radius: 8px;
+      border: 1px solid var(--border-soft);
+      background: #f9fbff;
+      font-size: 0.8rem;
+      line-height: 1.35;
+      color: var(--text-main);
+      transition: 0.15s;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--vista-blue-light);
+      background: #fff;
+      box-shadow: 0 0 0 2px rgba(38,132,168,0.18);
+    }
+
+    textarea {
+      min-height: 64px;
+      resize: vertical;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 8px;
+    }
+
+    .section-card {
+      margin-top: 10px;
+      padding: 9px 10px 11px;
+      border-radius: 12px;
+      border: 1px solid var(--border-soft);
+      background: linear-gradient(135deg, #fbfdff 0%, #f4f8fd 60%, #eff5fb 100%);
+      box-shadow: 0 8px 20px rgba(5, 41, 66, 0.05);
+      position: relative;
+    }
+
+    .section-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 12px 12px 0 0;
+      background: linear-gradient(90deg, var(--vista-blue-light), var(--vista-blue-dark));
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .section-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--vista-blue-dark);
+      font-family: "Montserrat", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .section-note {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    .top-info-header {
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+      color: var(--vista-blue-dark);
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 4px;
+      font-size: 0.78rem;
+    }
+
+    th, td {
+      padding: 4px 4px;
+      border: 1px solid var(--border-soft);
+      vertical-align: middle;
+    }
+
+    th {
+      background: #e8f0fb;
+      font-weight: 600;
+      color: var(--vista-blue-dark);
+      text-align: left;
+    }
+
+    td {
+      background: #f9fbff;
+    }
+
+    /* column widths */
+    .log-table th:nth-child(1) { width: 14%; }  /* Date */
+    .log-table th:nth-child(2) { width: 26%; }  /* Vehicle */
+    .log-table th:nth-child(3) { width: 14%; }  /* Start Odo */
+    .log-table th:nth-child(4) { width: 16%; }  /* Personal km */
+    .log-table th:nth-child(5) { width: 16%; }  /* Business km */
+    .log-table th:nth-child(6) { width: 14%; }  /* End Odo */
+
+    .small-input {
+      width: 100%;
+      padding: 6px 6px;
+      border-radius: 7px;
+      border: 1px solid var(--border-soft);
+      background: #ffffff;
+      font-size: 0.76rem;
+      line-height: 1.35;
+      color: var(--text-main);
+    }
+
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(120deg, var(--vista-blue-light), var(--vista-blue), var(--vista-blue-dark));
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(5, 41, 66, 0.35);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: var(--text-main);
+      border: 1px solid #d4d7dd;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 22px rgba(15, 23, 42, 0.18);
+    }
+
+    .helper-text {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .checkbox-row {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.78rem;
+    }
+
+    .checkbox-row label {
+      display: inline-flex;
+      gap: 6px;
+      align-items: flex-start;
+      font-weight: 500;
+      margin-bottom: 0;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      margin-top: 2px;
+      accent-color: var(--vista-blue);
+    }
+
+    .photo-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .odometer-photo-preview {
+      margin-top: 6px;
+    }
+
+    .odometer-photo-preview img {
+      max-width: 160px;
+      max-height: 90px;
+      border-radius: 8px;
+      border: 1px solid var(--border-soft);
+      object-fit: cover;
+      background: #e5ecf7;
+      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.1);
+    }
+
+    .version-tag {
+      margin-top: 6px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-align: right;
+    }
+
+    @media (max-width: 768px) {
+      .header-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .page-title-main {
+        font-size: 1.1rem;
+        letter-spacing: 0.12em;
+      }
+
+      .log-table th,
+      .log-table td {
+        padding: 3px 2px;
+        font-size: 0.7rem;
+      }
+
+      .small-input {
+        padding: 4px 4px;
+        font-size: 0.7rem;
+      }
+    }
+  </style>
 </head>
 <body>
+<div class="page-wrap">
+  <div class="container" id="logContainer">
+    <div class="header-bar">
+      <div class="header-left">
+        <h1>VISTAGEOMATICS</h1>
+        <p>Mileage Log</p>
+      </div>
+      <img src="vista-geomatics.png" alt="VistaGeomatics Logo" class="header-logo">
+    </div>
 
-<h1>Mileage Log</h1>
+    <div class="page-title-bar">
+      <div class="page-title-main">Mileage Log</div>
+      <div class="page-title-sub">Track business and personal mileage for each vehicle used.</div>
+      <div class="page-title-accent"></div>
+    </div>
 
-<div class="card">
-  <label>Driver Name</label>
-  <input id="driverName">
+    <form id="mileageForm">
+      <!-- Driver + Vehicle info -->
+      <div class="section-card">
+        <div class="top-info-header">Driver &amp; Vehicle Information</div>
+        <div class="grid-2">
+          <div>
+            <label for="driver_name">Driver Name</label>
+            <input type="text" id="driver_name" name="driver_name">
+          </div>
+          <div>
+            <label for="home_address">Home Address</label>
+            <input type="text" id="home_address" name="home_address">
+          </div>
+          <div>
+            <label for="city">City</label>
+            <input type="text" id="city" name="city">
+          </div>
+          <div>
+            <label for="province">Province</label>
+            <input type="text" id="province" name="province">
+          </div>
+          <div>
+            <label for="postal_code">Postal Code</label>
+            <input type="text" id="postal_code" name="postal_code">
+          </div>
+          <div>
+            <label for="bus_phone">Business Telephone</label>
+            <input type="text" id="bus_phone" name="bus_phone">
+          </div>
+        </div>
 
-  <label>Primary Licence Plate</label>
-  <input id="plate">
+        <div class="grid-2" style="margin-top:8px;">
+          <div>
+            <label for="year">Primary Vehicle Year</label>
+            <input type="text" id="year" name="year" placeholder="e.g., 2022">
+          </div>
+          <div>
+            <label for="make">Primary Vehicle Make</label>
+            <input type="text" id="make" name="make">
+          </div>
+          <div>
+            <label for="model">Primary Vehicle Model</label>
+            <input type="text" id="model" name="model">
+          </div>
+          <div>
+            <label for="plate">Primary Licence Plate</label>
+            <input type="text" id="plate" name="plate">
+          </div>
+          <div>
+            <label for="vin">Primary VIN</label>
+            <input type="text" id="vin" name="vin">
+          </div>
+          <div>
+            <label for="log_period">Log Period (Month / Year)</label>
+            <input type="text" id="log_period" name="log_period" placeholder="e.g., March 2025">
+          </div>
+        </div>
 
-  <label>Start Odometer</label>
-  <input id="startOdo" type="number">
+        <div class="helper-text">
+          Use one row per trip. If you use multiple vehicles, enter the alternate plate in the “Vehicle” column
+          for that line. Keep supporting records (e.g., odometer photos, maintenance records) with this log.
+        </div>
+      </div>
 
-  <label>Odometer Photo</label>
-  <input id="odoPhoto" type="file" accept="image/*">
-  <img id="odoPreview" class="photo-preview" style="display:none;">
+      <!-- Mileage entries -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">Daily Mileage Entries</div>
+          <div class="section-note">Vehicle and odometer fields will auto-fill where possible.</div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="log-table" id="logTable">
+            <thead>
+            <tr>
+              <th>Date</th>
+              <th>Vehicle (Unit / Plate)</th>
+              <th>Start Odometer</th>
+              <th>Personal km</th>
+              <th>Business km</th>
+              <th>End Odometer</th>
+            </tr>
+            </thead>
+            <tbody id="logBody">
+            <!-- rows created by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="btn-row" style="justify-content:flex-start; margin-top:8px;">
+          <button type="button" class="btn-secondary" id="addRowBtn">+ Add Row</button>
+        </div>
+      </div>
+
+      <!-- Odometer verification & photo -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">Odometer Verification</div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label for="od_proof_ref">Odometer proof (photo name / reference)</label>
+            <input type="text" id="od_proof_ref" name="od_proof_ref" placeholder="e.g., IMG 2033.jpg / service record #">
+          </div>
+          <div>
+            <label for="od_variance">Notes (maintenance, odometer changes, variances)</label>
+            <textarea id="od_variance" name="od_variance" placeholder="Explain any differences between the log and odometer (e.g., while vehicle was in maintenance)."></textarea>
+          </div>
+        </div>
+
+        <div class="photo-actions">
+          <button type="button" class="btn-secondary" id="odoPhotoBtn">+ Add Odometer Photo</button>
+          <input type="file" id="odoPhotoInput" accept="image/*" style="display:none;">
+          <span class="section-note">Small odometer photo to support readings.</span>
+        </div>
+        <div class="odometer-photo-preview" id="odoPhotoPreview"></div>
+
+        <div class="checkbox-row">
+          <label>
+            <input type="checkbox" id="od_confirm_match" name="od_confirm_match">
+            <span>I confirm the odometer readings in this log match the actual odometer readings when the vehicle was used, or are supported by attached records.</span>
+          </label>
+          <label>
+            <input type="checkbox" id="od_confirm_maintenance" name="od_confirm_maintenance">
+            <span>If the vehicle was in maintenance, I have accounted for any odometer changes and kept supporting documentation.</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Totals & Notes -->
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-title">Summary</div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label for="total_business">Total Business km</label>
+            <input type="text" id="total_business" name="total_business">
+          </div>
+          <div>
+            <label for="total_personal">Total Personal km</label>
+            <input type="text" id="total_personal" name="total_personal">
+          </div>
+        </div>
+        <div style="margin-top:8px;">
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" placeholder="Additional details (e.g., allocations by vehicle, corrections, comments)."></textarea>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="btn-row" id="buttonRow">
+        <button type="reset" class="btn-secondary" id="resetBtn">Reset / Clear Month</button>
+        <button type="button" class="btn-primary" id="downloadBtn">Download PDF</button>
+        <button type="button" class="btn-primary" id="shareBtn">Submit</button>
+      </div>
+
+      <div class="version-tag">
+        Mileage Log v2.3
+      </div>
+    </form>
+  </div>
 </div>
 
-<div class="card">
-  <table id="logTable">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Vehicle (Unit / Plate)</th>
-        <th>Business KM</th>
-        <th>Personal KM</th>
-        <th>End Odometer</th>
-      </tr>
-    </thead>
-    <tbody>
-    </tbody>
-  </table>
-
-  <button id="addRow">+ Add Row</button>
-</div>
-
-<div class="card">
-  <label>Notes</label>
-  <textarea id="notes" rows="4"></textarea>
-</div>
-
-<div class="footer">
-  Mileage Log v2.5 · Autosaves on this device
-</div>
+<!-- jsPDF + html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <script>
-const STORAGE_KEY = "mileageLog_v25";
+  const STORAGE_KEY = 'vistaMileageLog_v8';
 
-const driverName = document.getElementById("driverName");
-const plateInput = document.getElementById("plate");
-const startOdo = document.getElementById("startOdo");
-const notes = document.getElementById("notes");
-const tableBody = document.querySelector("#logTable tbody");
-const addRowBtn = document.getElementById("addRow");
-const odoPhoto = document.getElementById("odoPhoto");
-const odoPreview = document.getElementById("odoPreview");
+  const logBody   = document.getElementById('logBody');
+  const addRowBtn = document.getElementById('addRowBtn');
+  const form      = document.getElementById('mileageForm');
 
-function saveData() {
-  const rows = [...tableBody.querySelectorAll("tr")].map(tr => {
-    const inputs = tr.querySelectorAll("input");
-    return {
-      date: inputs[0].value,
-      vehicle: inputs[1].value,
-      business: inputs[2].value,
-      personal: inputs[3].value,
-      end: inputs[4].value
-    };
-  });
+  let odometerPhotos = []; // { dataUrl, uploaded }
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    driverName: driverName.value,
-    plate: plateInput.value,
-    startOdo: startOdo.value,
-    notes: notes.value,
-    rows,
-    photo: odoPreview.src || ""
-  }));
-}
+  // ---------- helpers ----------
 
-function loadData() {
-  const data = JSON.parse(localStorage.getItem(STORAGE_KEY));
-  if (!data) return;
-
-  driverName.value = data.driverName || "";
-  plateInput.value = data.plate || "";
-  startOdo.value = data.startOdo || "";
-  notes.value = data.notes || "";
-
-  if (data.photo) {
-    odoPreview.src = data.photo;
-    odoPreview.style.display = "block";
+  function buildVehicleLabel() {
+    const plateEl = document.getElementById('plate');
+    const plate = plateEl ? plateEl.value : '';
+    return (plate || '').trim(); // full plate
   }
 
-  tableBody.innerHTML = "";
-  (data.rows || []).forEach(addRowFromData);
-}
+  function createLogRow(values) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="date" class="small-input" name="date[]"></td>
+      <td><input type="text" class="small-input" name="vehicle[]"></td>
+      <td><input type="text" class="small-input" name="start_odo[]"></td>
+      <td><input type="text" class="small-input" name="personal_km[]"></td>
+      <td><input type="text" class="small-input" name="business_km[]"></td>
+      <td><input type="text" class="small-input" name="end_odo[]"></td>
+    `;
 
-function recalcEndOdo(tr) {
-  const business = Number(tr.children[2].querySelector("input").value) || 0;
-  const personal = Number(tr.children[3].querySelector("input").value) || 0;
-  const start = Number(startOdo.value) || 0;
-  tr.children[4].querySelector("input").value = start + business + personal;
-}
+    const inputs = tr.querySelectorAll('input.small-input');
+    const vehicleInput = tr.querySelector('input[name="vehicle[]"]');
 
-function addRowFromData(row = {}) {
-  const tr = document.createElement("tr");
-  tr.innerHTML = `
-    <td><input type="date" value="${row.date || ""}"></td>
-    <td><input value="${row.vehicle || plateInput.value}"></td>
-    <td><input type="number" value="${row.business || ""}"></td>
-    <td><input type="number" value="${row.personal || ""}"></td>
-    <td><input type="number" readonly value="${row.end || ""}"></td>
-  `;
+    if (values && Array.isArray(values)) {
+      inputs.forEach((input, idx) => {
+        if (values[idx] !== undefined) {
+          input.value = values[idx];
+        }
+      });
+    } else {
+      const label = buildVehicleLabel();
+      if (vehicleInput && label) {
+        vehicleInput.value = label;
+      }
+    }
 
-  tr.querySelectorAll("input").forEach(inp => {
-    inp.addEventListener("input", () => {
-      recalcEndOdo(tr);
-      saveData();
+    attachRowEvents(tr);
+    return tr;
+  }
+
+  function ensureInitialRows() {
+    if (logBody.children.length > 0) return;
+    for (let i = 0; i < 8; i++) {
+      const row = createLogRow();
+      if (i > 0) autoFillStartOdometer(row);
+      logBody.appendChild(row);
+    }
+  }
+
+  function numOrNaN(val) {
+    if (!val) return NaN;
+    const n = parseFloat(String(val).replace(',', '.'));
+    return isNaN(n) ? NaN : n;
+  }
+
+  function updateRowCalcs(row) {
+    const startInput = row.querySelector('input[name="start_odo[]"]');
+    const endInput   = row.querySelector('input[name="end_odo[]"]');
+    const busInput   = row.querySelector('input[name="business_km[]"]');
+    const perInput   = row.querySelector('input[name="personal_km[]"]');
+
+    if (!startInput || !endInput || !busInput || !perInput) return;
+
+    const startVal = numOrNaN(startInput.value);
+    const busVal   = numOrNaN(busInput.value);
+    const perVal   = numOrNaN(perInput.value);
+
+    if (!isNaN(startVal) && (!isNaN(busVal) || !isNaN(perVal))) {
+      const totalKm = (isNaN(busVal) ? 0 : busVal) + (isNaN(perVal) ? 0 : perVal);
+      const endVal  = startVal + totalKm;
+      if (!isNaN(endVal)) {
+        endInput.value = String(endVal);
+      }
+    }
+
+    updateTotals();
+  }
+
+  function updateTotals() {
+    let totalBus = 0;
+    let totalPer = 0;
+
+    const rows = logBody.querySelectorAll('tr');
+    rows.forEach(row => {
+      const busInput = row.querySelector('input[name="business_km[]"]');
+      const perInput = row.querySelector('input[name="personal_km[]"]');
+      const busVal   = numOrNaN(busInput?.value);
+      const perVal   = numOrNaN(perInput?.value);
+      if (!isNaN(busVal)) totalBus += busVal;
+      if (!isNaN(perVal)) totalPer += perVal;
     });
-  });
 
-  tableBody.appendChild(tr);
+    const totalBusInput = document.getElementById('total_business');
+    const totalPerInput = document.getElementById('total_personal');
+    if (totalBusInput) totalBusInput.value = totalBus ? String(totalBus) : '';
+    if (totalPerInput) totalPerInput.value = totalPer ? String(totalPer) : '';
+  }
+
+  function autoFillStartOdometer(row) {
+    const prev = row.previousElementSibling;
+    if (!prev) return;
+    const prevEnd = prev.querySelector('input[name="end_odo[]"]');
+    const start   = row.querySelector('input[name="start_odo[]"]');
+    if (prevEnd && start) {
+      start.value = prevEnd.value || '';
+    }
+  }
+
+  function attachRowEvents(row) {
+    const startInput = row.querySelector('input[name="start_odo[]"]');
+    const endInput   = row.querySelector('input[name="end_odo[]"]');
+    const busInput   = row.querySelector('input[name="business_km[]"]');
+    const perInput   = row.querySelector('input[name="personal_km[]"]');
+
+    if (startInput) {
+      startInput.addEventListener('input', () => {
+        updateRowCalcs(row);
+        saveDraft();
+      });
+    }
+
+    if (busInput) {
+      busInput.addEventListener('input', () => {
+        updateRowCalcs(row);
+        saveDraft();
+      });
+    }
+
+    if (perInput) {
+      perInput.addEventListener('input', () => {
+        updateRowCalcs(row);
+        saveDraft();
+      });
+    }
+
+    if (endInput) {
+      endInput.addEventListener('change', () => {
+        const next = row.nextElementSibling;
+        if (next) {
+          const nextStart = next.querySelector('input[name="start_odo[]"]');
+          if (nextStart) {
+            nextStart.value = endInput.value;
+          }
+        }
+        updateTotals();
+        saveDraft();
+      });
+    }
+  }
+
+  // *** FIXED FUNCTION: ensures full plate & upgrades old 1-character values ***
+  
+  // *** Plate autofill — FULL plate into Vehicle cells (also upgrades old 1-character saves) ***
+  function applyPlateToRows() {
+    const label = buildVehicleLabel();
+    if (!label) return;
+
+    const rows = logBody.querySelectorAll('tr');
+    rows.forEach(row => {
+      const vehicleInput = row.querySelector('input[name="vehicle[]"]');
+      if (!vehicleInput) return;
+
+      const current = (vehicleInput.value || '').trim();
+
+      if (!current) {
+        vehicleInput.value = label;
+        return;
+      }
+
+      if (current.length < label.length && label.toUpperCase().startsWith(current.toUpperCase())) {
+        vehicleInput.value = label;
+      }
+    });
+  }
+else if (current.length === 1 && label.startsWith(current)) {
+        // Old saved value with only first character → upgrade to full plate
+        vehicleInput.value = label;
+      }
+    });
+  }
+
+  // Plate change – fill / upgrade vehicle cells with full plate
+  const plateEl = document.getElementById('plate');
+  if (plateEl) {
+    plateEl.addEventListener('input', () => {
+      applyPlateToRows();
+      saveDraft();
+    });
+  }
+
+  if (addRowBtn) {
+    addRowBtn.addEventListener('click', () => {
+      const row = createLogRow();
+      autoFillStartOdometer(row);
+      logBody.appendChild(row);
+      applyPlateToRows();
+      saveDraft();
+    });
+  }
+
+  // ---------- ODOMETER PHOTO ----------
+  const odoPhotoBtn     = document.getElementById('odoPhotoBtn');
+  const odoPhotoInput   = document.getElementById('odoPhotoInput');
+  const odoPhotoPreview = document.getElementById('odoPhotoPreview');
+
+  
+  function renderOdoPreview(list) {
+    if (!odoPhotoPreview) return;
+    odoPhotoPreview.innerHTML = '';
+    (list || []).forEach(item => {
+      if (!item || !item.dataUrl) return;
+      const img = document.createElement('img');
+      img.src = item.dataUrl;
+      img.alt = 'Odometer Photo';
+      odoPhotoPreview.appendChild(img);
+    });
+  }
 }
 
-function addRow() {
-  addRowFromData({});
-  saveData();
+  if (odoPhotoBtn && odoPhotoInput) {
+    odoPhotoBtn.addEventListener('click', () => odoPhotoInput.click());
+    odoPhotoInput.addEventListener('change', () => {
+      const file = odoPhotoInput.files && odoPhotoInput.files[0];
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const uploaded = new Date().toISOString().slice(0,10);
+        odometerPhotos.push({ dataUrl: e.target.result, uploaded });
+        renderOdoPreview(odometerPhotos);
+        saveDraft();
+      };
+      reader.readAsDataURL(file);
+      odoPhotoInput.value = '';
+    });
 }
 
-addRowBtn.addEventListener("click", addRow);
+  // ---------- LOCAL STORAGE ----------
+  function saveDraft() {
+    try {
+      const data = { single: {}, rows: [], checks: {} };
 
-plateInput.addEventListener("input", () => {
-  const plate = plateInput.value;
-  document.querySelectorAll("#logTable tbody tr td:nth-child(2) input").forEach(inp => {
-    if (!inp.value) inp.value = plate;
-  });
-  saveData();
-});
+      const singleIds = [
+        'driver_name','home_address','city','province','postal_code','bus_phone',
+        'year','make','model','plate','vin','log_period',
+        'od_proof_ref','od_variance',
+        'total_business','total_personal','notes'
+      ];
 
-odoPhoto.addEventListener("change", () => {
-  const file = odoPhoto.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    odoPreview.src = reader.result;
-    odoPreview.style.display = "block";
-    saveData();
-  };
-  reader.readAsDataURL(file);
-});
+      singleIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) data.single[id] = el.value || '';
+      });
 
-// Init with 8 rows
-for (let i = 0; i < 8; i++) addRow();
-loadData();
+      data.single.odometer_photos = Array.isArray(odometerPhotos) ? odometerPhotos : [];
+
+      data.checks.od_confirm_match = document.getElementById('od_confirm_match')?.checked || false;
+      data.checks.od_confirm_maintenance = document.getElementById('od_confirm_maintenance')?.checked || false;
+
+      const rows = Array.from(logBody.querySelectorAll('tr'));
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll('input.small-input');
+        const rowVals = Array.from(inputs).map(i => i.value || '');
+        data.rows.push(rowVals);
+      });
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+      console.warn('Unable to save draft', e);
+    }
+  }
+
+  function loadDraft() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      ensureInitialRows();
+      applyPlateToRows();
+      updateTotals();
+      return;
+    }
+    try {
+      const data = JSON.parse(raw);
+
+      if (data.single) {
+        Object.keys(data.single).forEach(id => {
+          if (id === 'odometer_photo') return;
+          const el = document.getElementById(id);
+          if (el) el.value = data.single[id];
+        });
+      }
+
+      if (data.single && Array.isArray(data.single.odometer_photos)) {
+        odometerPhotos = data.single.odometer_photos;
+        renderOdoPreview(odometerPhotos);
+      }if (data.checks) {
+        const matchBox = document.getElementById('od_confirm_match');
+        const maintBox = document.getElementById('od_confirm_maintenance');
+        if (matchBox) matchBox.checked = !!data.checks.od_confirm_match;
+        if (maintBox) maintBox.checked = !!data.checks.od_confirm_maintenance;
+      }
+
+      if (Array.isArray(data.rows) && data.rows.length > 0) {
+        logBody.innerHTML = '';
+        data.rows.forEach(rowVals => {
+          const row = createLogRow(rowVals);
+          logBody.appendChild(row);
+        });
+      } else {
+        ensureInitialRows();
+      }
+
+      // Make sure old 1-character values are upgraded after load
+      applyPlateToRows();
+      updateTotals();
+    } catch (e) {
+      console.warn('Unable to load draft', e);
+      logBody.innerHTML = '';
+      ensureInitialRows();
+      applyPlateToRows();
+      updateTotals();
+    }
+  }
+
+  loadDraft();
+
+  if (form) {
+    form.addEventListener('input', saveDraft);
+    form.addEventListener('change', saveDraft);
+  }
+
+  const resetBtn = document.getElementById('resetBtn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY);
+      odometerPhotos = []; renderOdoPreview(odometerPhotos);
+      setTimeout(() => {
+        logBody.innerHTML = '';
+        ensureInitialRows();
+        applyPlateToRows();
+        updateTotals();
+      }, 0);
+    });
+  }
+
+  // ---------- PDF GENERATION ----------
+  const downloadBtn   = document.getElementById('downloadBtn');
+  const shareBtn      = document.getElementById('shareBtn');
+  const logContainer  = document.getElementById('logContainer');
+  const buttonRow     = document.getElementById('buttonRow');
+
+  
+  function sanitizeForFilename(str) {
+    return String(str || '')
+      .replace(/[\\/:*?"<>|]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function getFilenameAuto() {
+    const yyyy_mm_dd = new Date().toISOString().slice(0, 10);
+    const driver = sanitizeForFilename(document.getElementById('driver_name')?.value || 'Driver');
+    const plate  = sanitizeForFilename(document.getElementById('plate')?.value || 'Plate');
+    return `${yyyy_mm_dd} - ${driver} - ${plate}.pdf`;
+  }
+const user = prompt('Enter file name (without extension):', base);
+    const finalBase = (user && user.trim()) ? user.trim() : base;
+    return finalBase + '.pdf';
+  }
+
+  
+  async function generatePdf() {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'letter');
+
+    const originalDisplay = buttonRow.style.display;
+    buttonRow.style.display = 'none';
+
+    try {
+      // Page 1: the form (unchanged)
+      const canvas = await html2canvas(logContainer, {
+        scale: 2,
+        useCORS: true,
+        scrollY: -window.scrollY
+      });
+
+      const imgData    = canvas.toDataURL('image/jpeg', 0.95);
+      const pdfWidth   = pdf.internal.pageSize.getWidth();
+      const pdfHeight  = pdf.internal.pageSize.getHeight();
+      const margin     = 6;
+      const maxWidth   = pdfWidth  - margin * 2;
+      const maxHeight  = pdfHeight - margin * 2;
+
+      let imgWidth  = canvas.width;
+      let imgHeight = canvas.height;
+      const scale   = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
+
+      imgWidth  *= scale;
+      imgHeight *= scale;
+
+      const x = margin + (maxWidth  - imgWidth)  / 2;
+      const y = margin;
+
+      pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+
+      // Additional pages: large odometer photos (4 per page) with upload date labels
+      const photos = Array.isArray(odometerPhotos) ? odometerPhotos : [];
+      if (photos.length > 0) {
+        const pageW = pdf.internal.pageSize.getWidth();
+        const pageH = pdf.internal.pageSize.getHeight();
+
+        const outerPadX = 10;
+        const outerPadY = 12;
+        const gutterX = 8;
+        const gutterY = 12;
+        const labelH = 8;
+
+        const cellW = (pageW - outerPadX*2 - gutterX) / 2;
+        const cellH = (pageH - outerPadY*2 - gutterY) / 2;
+
+        for (let i = 0; i < photos.length; i += 4) {
+          pdf.addPage();
+
+          const slice = photos.slice(i, i + 4);
+          slice.forEach((p, idx) => {
+            const col = idx % 2;
+            const row = Math.floor(idx / 2);
+
+            const x0 = outerPadX + col * (cellW + gutterX);
+            const y0 = outerPadY + row * (cellH + gutterY);
+
+            const imgX = x0;
+            const imgY = y0;
+            const imgW = cellW;
+            const imgH = cellH - labelH;
+
+            if (p && p.dataUrl) {
+              pdf.addImage(p.dataUrl, 'JPEG', imgX, imgY, imgW, imgH, undefined, 'FAST');
+              const uploaded = (p.uploaded || '').trim() || 'unknown';
+              pdf.setFontSize(10);
+              pdf.text(`Uploaded: ${uploaded}`, imgX, imgY + imgH + 6);
+            }
+          });
+        }
+      }
+
+      return pdf;
+    } finally {
+      buttonRow.style.display = originalDisplay || 'flex';
+    }
+  }
+= window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'letter');
+
+    const originalDisplay = buttonRow.style.display;
+    buttonRow.style.display = 'none';
+
+    try {
+      const canvas = await html2canvas(logContainer, {
+        scale: 2,
+        useCORS: true,
+        scrollY: -window.scrollY
+      });
+
+      const imgData    = canvas.toDataURL('image/jpeg', 0.95);
+      const pdfWidth   = pdf.internal.pageSize.getWidth();
+      const pdfHeight  = pdf.internal.pageSize.getHeight();
+      const margin     = 6;
+      const maxWidth   = pdfWidth  - margin * 2;
+      const maxHeight  = pdfHeight - margin * 2;
+
+      let imgWidth  = canvas.width;
+      let imgHeight = canvas.height;
+      const scale   = Math.min(maxWidth / imgWidth, maxHeight / imgHeight);
+
+      imgWidth  *= scale;
+      imgHeight *= scale;
+
+      const x = margin + (maxWidth  - imgWidth)  / 2;
+      const y = margin;
+
+      pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+
+      return pdf;
+    } finally {
+      buttonRow.style.display = originalDisplay || 'flex';
+    }
+  }
+
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', async () => {
+      const filename = getFilenameAuto();
+      const pdf = await generatePdf();
+      pdf.save(filename);
+    });
+  }
+
+  // ---------- SUBMIT (email to timesheets@vistageomatics.com) ----------
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const filename = getFilenameAuto();
+      const pdf = await generatePdf();
+      pdf.save(filename);
+
+      const period = (document.getElementById('log_period')?.value || '').trim();
+      const subject = 'Mileage Log - ' + filename;
+      const bodyLines = [
+        'Please find my mileage log attached.',
+        '',
+        period ? 'Period: ' + period : '',
+        '',
+        'Sent from the Vista Geomatics mileage log form.'
+      ].join('%0D%0A'); // URL-encoded newlines
+
+      // Open the user's email client with recipient pre-filled
+      window.location.href = 'mailto:timesheets@vistageomatics.com'
+        + '?subject=' + encodeURIComponent(subject)
+        + '&body=' + bodyLines;
+    });
+  }
 </script>
-
 </body>
 </html>
